@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load afw %}
+{% block title %}{% if active_type %}{{ active_type.name }}s{% else %}Opportunities{% endif %} – Scholarships, Fee Waivers &amp; Funding – App Fee Waiver{% endblock %}
+{% block meta_description %}Browse scholarships, application fee waivers, fully funded programs, assistantships, fellowships and internships shared by the App Fee Waiver community.{% endblock %}
+{% block canonical %}{{ SITE_URL }}{{ request.path }}{% endblock %}
+
+{% block content %}
+<div class="max-w-site mx-auto px-4 lg:px-6 py-6 lg:py-8">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="font-display font-bold text-2xl sm:text-3xl">{% if active_type %}{{ active_type.name }}s{% else %}Opportunities{% endif %}</h1>
+      <p class="mt-1 text-slate-600">Scholarships, fee waivers, funded programs and more, shared by the community.</p>
+    </div>
+    <a href="{% url 'opportunities:submit' %}{% if active_type %}?type={{ active_type.slug }}{% endif %}" class="btn btn-primary">+ Submit an Opportunity</a>
+  </div>
+
+  <nav class="mt-5 flex gap-2 scroll-x pb-1" aria-label="Opportunity types">
+    <a href="{% url 'opportunities:list' %}" class="chip" {% if not active_type %}aria-current="true"{% endif %}>All types</a>
+    {% for t in types %}
+      <a href="{% url 'opportunities:by_type' t.slug %}" class="chip" {% if active_type and active_type.pk == t.pk %}aria-current="true"{% endif %}>{{ t.name }}s</a>
+    {% endfor %}
+  </nav>
+
+  <div class="mt-6 grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[17rem_minmax(0,1fr)] items-start" x-data="{ filters: false }">
+    {# Filters #}
+    <div>
+      <button type="button" class="lg:hidden btn btn-outline w-full" @click="filters = !filters" :aria-expanded="filters" aria-controls="opp-filters">{% icon "filter" "h-4 w-4" %} Filters{% if has_filters %} (active){% endif %}</button>
+      <form id="opp-filters" method="get" class="card card-pad space-y-4 mt-3 lg:mt-0 hidden lg:block lg:sticky lg:top-24" :class="filters && '!block'" aria-label="Filter opportunities">
+        <div>
+          <label for="f-q" class="form-label">Search</label>
+          <input id="f-q" type="search" name="q" value="{{ selected.q }}" class="form-input" placeholder="e.g. Computer Science">
+        </div>
+        {% if not active_type %}
+        <div>
+          <label for="f-type" class="form-label">Opportunity type</label>
+          <select id="f-type" name="type" class="form-select">
+            <option value="">Any type</option>
+            {% for t in types %}<option value="{{ t.slug }}" {% if selected.type == t.slug %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div>
+          <label for="f-country" class="form-label">Country</label>
+          <select id="f-country" name="country" class="form-select">
+            <option value="">Any country</option>
+            {% for c in countries %}<option value="{{ c }}" {% if selected.country|lower == c|lower %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="f-degree" class="form-label">Degree level</label>
+          <select id="f-degree" name="degree" class="form-select">
+            <option value="">Any level</option>
+            {% for value, label in degree_levels %}<option value="{{ value }}" {% if selected.degree == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="f-funding" class="form-label">Funding</label>
+          <select id="f-funding" name="funding" class="form-select">
+            <option value="">Any funding</option>
+            {% for value, label in funding_types %}<option value="{{ value }}" {% if selected.funding == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="f-field" class="form-label">Field of study</label>
+          <input id="f-field" type="text" name="field" value="{{ selected.field }}" class="form-input" placeholder="e.g. Engineering">
+        </div>
+        <div>
+          <label for="f-deadline" class="form-label">Deadline</label>
+          <select id="f-deadline" name="deadline" class="form-select">
+            {% for value, label in deadline_filters %}<option value="{{ value }}" {% if selected.deadline == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <label class="flex items-center gap-2 text-sm font-medium">
+          <input type="checkbox" name="verified" value="1" class="form-checkbox" {% if selected.verified == "1" %}checked{% endif %}> Verified only
+        </label>
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <div class="flex gap-2">
+          <button class="btn btn-primary flex-1">Apply filters</button>
+          {% if has_filters %}<a href="{{ request.path }}" class="btn btn-outline">Reset</a>{% endif %}
+        </div>
+      </form>
+    </div>
+
+    <div class="min-w-0">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-slate-600"><strong class="text-navy-900">{{ page_obj.paginator.count }}</strong> opportunit{{ page_obj.paginator.count|pluralize:"y,ies" }}{% if selected.deadline != "expired" %} open{% endif %}</p>
+        {% if selected.deadline != "expired" %}
+        <div class="flex items-center gap-1 text-sm">
+          <span class="text-slate-500">Sort:</span>
+          <a href="{% filter_url sort='newest' %}" class="tab !mr-2" {% if sort != "deadline" %}aria-current="true"{% endif %}>Newest</a>
+          <a href="{% filter_url sort='deadline' %}" class="tab !mr-0" {% if sort == "deadline" %}aria-current="true"{% endif %}>Closing soon</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {% for opportunity in page_obj %}
+          {% include "partials/opportunity_card.html" %}
+        {% empty %}
+          <div class="card card-pad sm:col-span-2 xl:col-span-3 text-center">
+            <p class="font-semibold">No opportunities match these filters.</p>
+            <p class="text-sm text-slate-600 mt-1">Try removing a filter, or share an opportunity you know about.</p>
+            <a href="{% url 'opportunities:submit' %}" class="btn btn-primary mt-4">Submit an Opportunity</a>
+          </div>
+        {% endfor %}
+      </div>
+      {% include "partials/pagination.html" %}
+      <div class="mt-6">{% include "partials/official_notice.html" %}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

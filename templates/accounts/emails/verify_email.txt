@@ -1,0 +1,10 @@
+Hello {{ user.display_name }},
+
+Welcome to App Fee Waiver! Please confirm your email address by opening this link:
+
+{{ link }}
+
+If you didn't create an account, you can ignore this email.
+
+App Fee Waiver
+Scholarships • Applications • Opportunities

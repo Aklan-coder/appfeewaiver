@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load afw %}
+{% block title %}CV &amp; SOP Review – App Fee Waiver{% endblock %}
+{% block meta_description %}Send your CV or Statement of Purpose to the App Fee Waiver team by email for review and feedback.{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="relative max-w-site mx-auto px-4 lg:px-6 py-10 sm:py-14">
+    <p class="inline-flex items-center gap-2 text-brand-300 font-semibold text-sm">{% icon "file-text" "h-4 w-4" %} Expert Support</p>
+    <h1 class="mt-2 font-display font-bold text-3xl sm:text-4xl">CV &amp; SOP Review</h1>
+    <p class="mt-3 max-w-2xl text-slate-200">Get feedback on your CV or Statement of Purpose from the App Fee Waiver team. You send your document by email, so it is never uploaded to or stored on this website.</p>
+  </div>
+</section>
+
+<div class="max-w-site mx-auto px-4 lg:px-6 py-10 space-y-10">
+  <div class="grid gap-6 md:grid-cols-2">
+    <div class="card card-pad flex flex-col">
+      <span class="h-12 w-12 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center">{% icon "file-user" "h-6 w-6" %}</span>
+      <h2 class="mt-4 font-display font-bold text-xl">Submit CV for Review</h2>
+      <p class="mt-2 text-slate-600 flex-1">Feedback on structure, clarity, and how well your CV presents your education, research and experience for your target programs.</p>
+      <a href="{{ cv_mailto }}" class="btn btn-primary mt-5">{% icon "mail" "h-4 w-4" %} Submit CV for Review</a>
+      <p class="mt-2 text-xs text-slate-500">Opens your email app · To: <span class="font-semibold break-all">{{ site.cv_review }}</span> · Subject: “{{ cv_subject }}”</p>
+    </div>
+    <div class="card card-pad flex flex-col">
+      <span class="h-12 w-12 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center">{% icon "file-text" "h-6 w-6" %}</span>
+      <h2 class="mt-4 font-display font-bold text-xl">Submit SOP for Review</h2>
+      <p class="mt-2 text-slate-600 flex-1">Feedback on your Statement of Purpose or personal statement: your story, focus, motivation and fit with the program.</p>
+      <a href="{{ sop_mailto }}" class="btn btn-primary mt-5">{% icon "mail" "h-4 w-4" %} Submit SOP for Review</a>
+      <p class="mt-2 text-xs text-slate-500">Opens your email app · To: <span class="font-semibold break-all">{{ site.sop_review }}</span> · Subject: “{{ sop_subject }}”</p>
+    </div>
+  </div>
+
+  <div class="flex gap-3 rounded-xl border-2 border-brand-600 bg-brand-50 px-5 py-4 text-brand-900" role="note">
+    {% icon "alert" "h-6 w-6 shrink-0 text-brand-700" %}
+    <p class="font-semibold">Please attach your document as a PDF before sending the email.</p>
+  </div>
+
+  <div class="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-2">
+    <section class="card card-pad" aria-labelledby="how-heading">
+      <h2 id="how-heading" class="font-display font-bold text-xl">How it works</h2>
+      <ol class="mt-4 space-y-4">
+        <li class="flex gap-3"><span class="h-7 w-7 shrink-0 rounded-full bg-navy-900 text-white text-sm font-bold flex items-center justify-center">1</span><p>Click <strong>Submit CV for Review</strong> or <strong>Submit SOP for Review</strong>. Your email app opens with a pre-filled message.</p></li>
+        <li class="flex gap-3"><span class="h-7 w-7 shrink-0 rounded-full bg-navy-900 text-white text-sm font-bold flex items-center justify-center">2</span><p>Fill in your details: full name, target degree, field of study, target universities, target country, application deadline and the type of feedback you want.</p></li>
+        <li class="flex gap-3"><span class="h-7 w-7 shrink-0 rounded-full bg-navy-900 text-white text-sm font-bold flex items-center justify-center">3</span><p>Attach your document as a <strong>PDF</strong> and send the email.</p></li>
+        <li class="flex gap-3"><span class="h-7 w-7 shrink-0 rounded-full bg-navy-900 text-white text-sm font-bold flex items-center justify-center">4</span><p>Our team replies to you by email.</p></li>
+      </ol>
+      <p class="mt-5 text-sm text-slate-600">If the button doesn't open an email app, send your email manually to <a class="font-semibold text-brand-700 break-all" href="mailto:{{ site.cv_review }}">{{ site.cv_review }}</a>{% if site.sop_review != site.cv_review %} (CV) or <a class="font-semibold text-brand-700 break-all" href="mailto:{{ site.sop_review }}">{{ site.sop_review }}</a> (SOP){% endif %}.</p>
+    </section>
+
+    <section class="card card-pad" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading" class="font-display font-bold text-xl flex items-center gap-2">{% icon "lock" "h-5 w-5 text-brand-700" %} Your privacy</h2>
+      <ul class="mt-4 space-y-3 text-slate-700">
+        <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %}<span>Documents are <strong>not uploaded</strong> to this website and are <strong>not stored</strong> in any website database or cloud storage.</span></li>
+        <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %}<span>Your email goes directly from your email account to the App Fee Waiver team's inbox.</span></li>
+        <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %}<span>Please don't post your CV, SOP or personal details publicly in the community.</span></li>
+        <li class="flex gap-2">{% icon "info" "h-5 w-5 shrink-0 text-slate-500" %}<span>Remove information you don't want to share (for example your home address or ID numbers) before sending.</span></li>
+      </ul>
+      <a href="{% url 'core:privacy' %}" class="mt-4 inline-block text-sm font-semibold text-brand-700 hover:underline">Read the Privacy Policy</a>
+    </section>
+  </div>
+
+  <div class="card card-pad flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h2 class="font-display font-bold text-xl">Prefer to talk it through?</h2>
+      <p class="mt-1 text-slate-600">Request a one-on-one appointment for broader application guidance.</p>
+    </div>
+    <a href="{% url 'support:appointment' %}" class="btn btn-navy">Request an Appointment</a>
+  </div>
+</div>
+{% endblock %}

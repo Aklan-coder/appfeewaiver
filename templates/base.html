@@ -1,0 +1,83 @@
+{% load static afw %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  {% with default_description="App Fee Waiver helps students discover scholarships, application fee waivers, funding opportunities and university application support through a global community." %}
+  <title>{% block title %}App Fee Waiver – Scholarships • Applications • Opportunities{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ default_description }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}{{ SITE_URL }}{{ request.path }}{% endblock %}">
+  <meta property="og:site_name" content="App Fee Waiver">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}App Fee Waiver – Scholarships • Applications • Opportunities{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ default_description }}{% endblock %}">
+  <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
+  <meta property="og:image" content="{{ SITE_URL }}{% static 'img/og-image.png' %}">
+  <meta name="twitter:card" content="summary_large_image">
+  {% endwith %}
+  {% block robots %}{% endblock %}
+  <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+  <meta name="theme-color" content="#0a172d">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  {% if TAILWIND_USE_CDN %}
+    {# Development: no Node.js needed. #}
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script src="{% static 'js/tailwind-cdn-config.js' %}"></script>
+    <style type="text/tailwindcss">{% inline_static 'css/components.css' %}</style>
+  {% else %}
+    {# Production: built with `npm run build:css` (includes components.css). #}
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+  {% endif %}
+  <script defer src="{% static 'js/app.js' %}"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased">
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  {% if site.announcement_banner %}
+    <div class="bg-navy-900 text-white text-sm">
+      <div class="max-w-site mx-auto px-4 py-2 text-center">{{ site.announcement_banner }}</div>
+    </div>
+  {% endif %}
+
+  {% include "partials/header.html" %}
+
+  {% if user.is_authenticated and not user.email_verified %}
+    <div class="bg-amber-50 border-b border-amber-200 text-amber-900 text-sm">
+      <div class="max-w-site mx-auto px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+        {% icon "mail" "h-4 w-4 shrink-0" %}
+        <span>Please confirm your email address{% if REQUIRE_EMAIL_VERIFICATION %} before posting{% endif %}. Check your inbox for the link.</span>
+        <form method="post" action="{% url 'accounts:resend_verification' %}">{% csrf_token %}
+          <button class="font-semibold underline underline-offset-2">Resend link</button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+  {% if user.is_authenticated and user.is_suspended %}
+    <div class="bg-red-50 border-b border-red-200 text-red-900 text-sm">
+      <div class="max-w-site mx-auto px-4 py-2">Your account is suspended from posting until {{ user.suspended_until|date:"M j, Y H:i" }}. You can still browse the site.</div>
+    </div>
+  {% endif %}
+
+  {% include "partials/messages.html" %}
+
+  <main id="main" class="flex-1" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "partials/footer.html" %}
+
+  <div id="js-toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] toast bg-navy-900 text-white text-sm font-medium rounded-lg px-4 py-3" role="status" aria-live="polite">
+    <span data-toast-text></span>
+  </div>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

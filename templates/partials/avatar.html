@@ -1,0 +1,1 @@
+{% if photo_url %}<img src="{{ photo_url }}" alt="" class="{{ size_class }} rounded-full object-cover shrink-0 bg-slate-100" loading="lazy" width="80" height="80">{% else %}<span class="{{ size_class }} {{ color }} rounded-full shrink-0 inline-flex items-center justify-center font-semibold text-white select-none" aria-hidden="true">{{ user.initials }}</span>{% endif %}

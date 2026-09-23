@@ -1,0 +1,13 @@
+{% load afw %}
+<article class="card card-pad card-hover flex flex-col h-full">
+  <div class="flex items-center gap-2 text-xs">
+    <span class="type-label">Resource</span><span class="text-slate-300">•</span>
+    <a href="{% url 'resources:list' %}?category={{ resource.category.slug }}" class="text-slate-500 hover:text-brand-700">{{ resource.category.name }}</a>
+  </div>
+  <h3 class="mt-2 font-display font-bold text-lg leading-snug"><a href="{{ resource.get_absolute_url }}" class="hover:text-brand-700">{{ resource.title }}</a></h3>
+  <p class="mt-2 text-sm text-slate-600 line-clamp-3">{{ resource.summary }}</p>
+  <div class="mt-auto pt-4 flex items-center justify-between text-sm">
+    <span class="badge badge-muted">{{ resource.get_kind_display }}</span>
+    <a href="{{ resource.get_absolute_url }}" class="font-semibold text-brand-700 hover:underline inline-flex items-center gap-1">Open {% icon "arrow-right" "h-4 w-4" %}</a>
+  </div>
+</article>

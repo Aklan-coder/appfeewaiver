@@ -1,0 +1,61 @@
+{% extends "core/page_base.html" %}
+{% load afw %}
+{% block title %}About – App Fee Waiver{% endblock %}
+{% block meta_description %}App Fee Waiver is a global community helping students find scholarships, application fee waivers and funding, and supporting one another through university applications.{% endblock %}
+{% block page_heading %}About App Fee Waiver{% endblock %}
+{% block page_intro %}Scholarships • Applications • Opportunities: a community of {{ site.member_count_display }} members helping each other apply to universities around the world.{% endblock %}
+{% block page_body %}
+<div class="space-y-6">
+  <section class="card card-pad prose-afw">
+    <h2>What App Fee Waiver is</h2>
+    <p>App Fee Waiver is a scholarship and university-application community. Members share scholarships, application fee waivers, fully funded programs, assistantships and fellowships; ask and answer questions; and support one another through every stage of the application process.</p>
+    <p>This website brings the community together in one organised place, alongside our existing groups.</p>
+  </section>
+
+  <section class="card card-pad prose-afw">
+    <h2>Why the community exists</h2>
+    <p>Applying to universities, especially abroad, can be expensive and confusing. Application fees, scattered information and unclear funding options stop many capable students from applying at all. When students share what they find and what they've learned, everyone applies with better information and lower costs.</p>
+  </section>
+
+  <section class="card card-pad">
+    <h2 class="font-display font-bold text-xl">What members can do</h2>
+    <ul class="mt-4 grid sm:grid-cols-2 gap-3 text-slate-700">
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Discover scholarships and fee waivers</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Find funded programs, assistantships and fellowships</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Share opportunities they discover</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Ask questions and help others</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Save opportunities for later</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Use guides, templates and checklists</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Get CV and SOP feedback by email</li>
+      <li class="flex gap-2">{% icon "check-circle" "h-5 w-5 shrink-0 text-brand-700" %} Share and celebrate success stories</li>
+    </ul>
+  </section>
+
+  <section class="card card-pad prose-afw">
+    <h2>Community values</h2>
+    <ul>
+      <li><strong>Generosity:</strong> share what you find and what you've learned.</li>
+      <li><strong>Accuracy:</strong> link to official sources and correct mistakes.</li>
+      <li><strong>Respect:</strong> everyone is at a different stage, and every question is welcome.</li>
+      <li><strong>Privacy:</strong> protect your own and other people's personal information.</li>
+      <li><strong>Integrity:</strong> no scams, no impersonation, no false opportunities.</li>
+    </ul>
+  </section>
+
+  <section class="card card-pad prose-afw">
+    <h2>How opportunities are verified</h2>
+    <p>Any member can submit an opportunity. It appears immediately with a <span class="badge badge-community">Community Submitted</span> label. A moderator then checks that an official source exists (for example the university or scholarship provider's own web page) and, if so, marks it <span class="badge badge-verified">Verified</span>. Listings that look false or misleading are removed.</p>
+    <p>Verification only means a moderator found an official source. It does not mean App Fee Waiver guarantees admission, funding or eligibility.</p>
+  </section>
+
+  <section class="rounded-xl border border-amber-200 bg-amber-50 p-5 sm:p-6 text-amber-950">
+    <h2 class="font-display font-bold text-xl">Important disclaimer</h2>
+    <p class="mt-2">Always confirm deadlines, eligibility requirements, funding details, and application instructions on the official university or scholarship website before applying. App Fee Waiver is a community resource and is not affiliated with the universities or organisations listed unless stated. <a class="underline font-semibold" href="{% url 'core:disclaimer' %}">Read the full disclaimer</a>.</p>
+  </section>
+
+  <div class="flex flex-col sm:flex-row gap-3">
+    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Join the Community</a>
+    <a href="{% url 'core:contact' %}" class="btn btn-outline">Contact us</a>
+  </div>
+</div>
+{% endblock %}

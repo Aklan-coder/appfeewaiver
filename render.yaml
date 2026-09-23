@@ -1,0 +1,27 @@
+# Optional Render "Blueprint". You can also create the service by hand (see docs/DEPLOYMENT.md).
+services:
+  - type: web
+    name: appfeewaiver
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn appfeewaiver.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false          # paste your Neon connection string in the dashboard
+      - key: DB_SSL_REQUIRE
+        value: "True"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: PROFILE_PHOTO_UPLOADS_ENABLED
+        value: "False"

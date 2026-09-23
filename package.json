@@ -1,0 +1,12 @@
+{
+  "name": "appfeewaiver-assets",
+  "private": true,
+  "description": "Builds the production Tailwind CSS file. Not needed to run the site locally.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/tailwind-input.css -o ./static/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./assets/tailwind-input.css -o ./static/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.14"
+  }
+}

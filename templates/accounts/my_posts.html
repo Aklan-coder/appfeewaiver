@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load afw %}
+{% block title %}My posts – App Fee Waiver{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h1 class="font-display font-bold text-2xl sm:text-3xl">My posts</h1>
+    <a href="{% url 'community:post_create' %}" class="btn btn-primary">+ Create a Post</a>
+  </div>
+  <ul class="mt-6 card divide-y divide-slate-100">
+    {% for post in page_obj %}
+      <li class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <span class="badge badge-brand">{{ post.category.name }}</span>
+            {% if post.status == "removed" %}<span class="badge badge-danger">Removed by moderator</span>{% endif %}
+            <span class="text-slate-500">{{ post.created_at|date:"M j, Y" }} · {{ post.num_comments }} comment{{ post.num_comments|pluralize }} · {{ post.num_reactions }} like{{ post.num_reactions|pluralize }}</span>
+          </div>
+          <a href="{{ post.get_absolute_url }}" class="mt-1 block font-semibold hover:text-brand-700">{{ post.title }}</a>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          {% if post.status == "published" %}<a href="{% url 'community:post_edit' post.slug %}" class="btn btn-outline btn-sm">Edit</a>{% endif %}
+          <a href="{% url 'community:post_delete' post.slug %}" class="btn btn-outline btn-sm text-red-700">Delete</a>
+        </div>
+      </li>
+    {% empty %}
+      <li class="p-8 text-center text-slate-600">You haven't posted yet. Ask a question or share an opportunity!</li>
+    {% endfor %}
+  </ul>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

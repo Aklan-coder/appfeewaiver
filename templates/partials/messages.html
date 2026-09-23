@@ -1,0 +1,13 @@
+{% if messages %}
+<div class="max-w-site mx-auto px-4 lg:px-6 mt-4 space-y-2" aria-live="polite">
+  {% for message in messages %}
+    <div data-dismissible {% if message.level < 40 %}data-autohide{% endif %}
+         class="flex items-start gap-3 rounded-lg border px-4 py-3 text-sm
+         {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-900{% elif message.tags == 'warning' %}bg-amber-50 border-amber-200 text-amber-900{% elif message.tags == 'info' %}bg-sky-50 border-sky-200 text-sky-900{% else %}bg-brand-50 border-brand-200 text-brand-900{% endif %}"
+         role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
+      <p class="flex-1">{{ message }}</p>
+      <button type="button" data-dismiss class="opacity-70 hover:opacity-100" aria-label="Dismiss message">&times;</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}

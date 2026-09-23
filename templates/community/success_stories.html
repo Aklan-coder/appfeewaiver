@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load afw %}
+{% block title %}Success Stories – App Fee Waiver{% endblock %}
+{% block meta_description %}Admissions, scholarships, assistantships, fee waivers and visas: success stories shared by App Fee Waiver members.{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="relative max-w-site mx-auto px-4 lg:px-6 py-10 sm:py-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <div class="max-w-2xl">
+      <p class="inline-flex items-center gap-2 text-brand-300 font-semibold text-sm">{% icon "trophy" "h-4 w-4" %} Celebrating our members</p>
+      <h1 class="mt-2 font-display font-bold text-3xl sm:text-4xl">Success Stories</h1>
+      <p class="mt-3 text-slate-200">Real wins from the community. Share yours to encourage others. You never have to reveal universities, amounts or personal details.</p>
+    </div>
+    <a href="{% url 'community:post_create' %}?category=success-stories" class="btn btn-bright self-start md:self-auto">Share Your Success Story</a>
+  </div>
+</section>
+
+<div class="max-w-site mx-auto px-4 lg:px-6 py-8">
+  <nav class="flex gap-2 scroll-x pb-1" aria-label="Filter by achievement">
+    <a href="{% filter_url achievement='' %}" class="chip" {% if not achievement %}aria-current="true"{% endif %}>All</a>
+    {% for value, label in achievement_types %}
+      <a href="{% filter_url achievement=value %}" class="chip" {% if achievement == value %}aria-current="true"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+
+  <div class="mt-6 card divide-y divide-slate-100">
+    {% for post in page_obj %}
+      {% include "partials/post_card.html" %}
+    {% empty %}
+      <div class="p-10 text-center text-slate-600">No success stories here yet. <a class="font-semibold text-brand-700 hover:underline" href="{% url 'community:post_create' %}?category=success-stories">Be the first to share one</a>.</div>
+    {% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

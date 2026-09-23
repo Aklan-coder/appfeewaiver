@@ -1,0 +1,29 @@
+{% load afw %}
+{# Expects: opportunity; optional: saved_opportunity_ids #}
+<article class="card card-hover p-5 flex flex-col h-full">
+  <div class="flex items-start justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="type-label">{{ opportunity.opportunity_type.short_label }}</span>
+      {% if opportunity.is_verified %}
+        <span class="badge badge-verified">{% icon "shield-check" "h-3.5 w-3.5" %} Verified</span>
+      {% else %}
+        <span class="badge badge-community">Community Submitted</span>
+      {% endif %}
+      {% if opportunity.is_expired %}<span class="badge badge-muted">Expired</span>{% endif %}
+    </div>
+    {% with is_saved=opportunity.pk|in_set:saved_opportunity_ids %}{% include "partials/save_opportunity_button.html" %}{% endwith %}
+  </div>
+  <h3 class="mt-2 font-display font-bold text-lg leading-snug text-navy-900">
+    <a href="{{ opportunity.get_absolute_url }}" class="hover:text-brand-700">{{ opportunity.title }}</a>
+  </h3>
+  <p class="mt-1 text-sm font-medium text-slate-700">{{ opportunity.organization }}</p>
+  <dl class="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+    <div class="flex items-center gap-1.5 text-slate-600 min-w-0">{% icon "map-pin" "h-4 w-4 shrink-0 text-slate-400" %}<dt class="sr-only">Country</dt><dd class="truncate">{{ opportunity.country }}</dd></div>
+    <div class="flex items-center gap-1.5 text-slate-600 min-w-0">{% icon "graduation" "h-4 w-4 shrink-0 text-slate-400" %}<dt class="sr-only">Degree level</dt><dd class="truncate">{{ opportunity.get_degree_level_display }}</dd></div>
+    <div class="flex items-center gap-1.5 text-slate-600 min-w-0 col-span-2">{% icon "clock" "h-4 w-4 shrink-0 text-slate-400" %}<dt class="sr-only">Deadline</dt>
+      <dd>{% if opportunity.deadline %}Deadline: <span class="font-semibold text-navy-900">{{ opportunity.deadline|date:"M j, Y" }}</span>{% else %}{{ opportunity.deadline_note|default:"Deadline not specified" }}{% endif %}</dd>
+    </div>
+  </dl>
+  <p class="mt-3 text-sm text-slate-600 line-clamp-2">{{ opportunity.description|truncatechars:180 }}</p>
+  <a href="{{ opportunity.get_absolute_url }}" class="mt-auto pt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:underline">View details {% icon "arrow-right" "h-4 w-4" %}</a>
+</article>

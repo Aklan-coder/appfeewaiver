@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Edit comment – App Fee Waiver{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="font-display font-bold text-2xl">Edit your comment</h1>
+  <p class="mt-1 text-sm text-slate-600">On “<a class="text-brand-700 hover:underline" href="{{ comment.post.get_absolute_url }}">{{ comment.post.title }}</a>”</p>
+  <form method="post" class="card card-pad mt-6 space-y-4">
+    {% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="flex justify-end gap-2">
+      <a href="{{ comment.get_absolute_url }}" class="btn btn-outline">Cancel</a>
+      <button class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

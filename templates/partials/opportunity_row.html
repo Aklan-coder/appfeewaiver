@@ -1,0 +1,14 @@
+{% load afw %}
+{# Compact opportunity line for sidebars. Expects: opportunity #}
+<li>
+  <a href="{{ opportunity.get_absolute_url }}" class="flex gap-3 p-2 -mx-2 rounded-lg hover:bg-slate-50">
+    <span class="h-11 w-11 shrink-0 rounded-lg bg-brand-50 text-brand-700 flex items-center justify-center">{% if opportunity.opportunity_type.slug == "application-fee-waivers" %}{% icon "ticket" "h-5 w-5" %}{% else %}{% icon "award" "h-5 w-5" %}{% endif %}</span>
+    <span class="min-w-0">
+      <span class="block text-sm font-semibold text-navy-900 leading-snug line-clamp-2">{{ opportunity.title }}</span>
+      <span class="block text-xs text-slate-500 mt-0.5 truncate">{{ opportunity.organization }} · {{ opportunity.country }}</span>
+      <span class="block text-xs mt-0.5 {% if opportunity.days_left is not None and opportunity.days_left <= 14 %}text-rose-700 font-semibold{% else %}text-slate-600{% endif %}">
+        {% if opportunity.deadline %}Deadline: {{ opportunity.deadline|date:"M j, Y" }}{% else %}{{ opportunity.deadline_note|default:"Deadline varies" }}{% endif %}
+      </span>
+    </span>
+  </a>
+</li>
