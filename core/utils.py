@@ -1,32 +1,10 @@
 import functools
-import re
 
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.utils.text import slugify
-
-
-RESERVED_SLUGS = {"new", "submit", "success-stories", "comments", "saved", "search", "admin", "edit"}
-
-
-def unique_slugify(instance, value, slug_field="slug", max_length=200):
-    """Create a readable, unique slug for `instance` from `value`."""
-    base = slugify(value)[: max_length - 8].strip("-") or "item"
-    if base in RESERVED_SLUGS:
-        base = f"{base}-post"
-    model = instance.__class__
-    slug = base
-    n = 2
-    qs = model._default_manager.all()
-    if instance.pk:
-        qs = qs.exclude(pk=instance.pk)
-    while qs.filter(**{slug_field: slug}).exists():
-        slug = f"{base}-{n}"
-        n += 1
-    return slug
 
 
 def safe_back_url(request, fallback="/"):
@@ -95,45 +73,3 @@ def rate_limit(action, limit, period, methods=("POST",)):
         return wrapper
 
     return decorator
-
-
-STOPWORDS = {"a", "an", "the", "for", "in", "of", "and", "to", "on", "at", "with", "is", "my", "me", "i"}
-
-
-def search_terms(query):
-    """Split a search query into normalised terms ("Master's" -> "master")."""
-    terms = []
-    for raw in re.split(r"\s+", (query or "").strip()):
-        term = raw.strip("\"'.,;:!?()").lower()
-        term = re.sub(r"'s$|’s$", "", term)
-        if len(term) > 1 and term not in STOPWORDS:
-            terms.append(term)
-    return terms[:8]
-
-
-TERM_ALIASES = {
-    "us": ["united states", "usa"],
-    "usa": ["united states"],
-    "america": ["united states"],
-    "uk": ["united kingdom"],
-    "phd": ["doctoral", "doctorate"],
-    "masters": ["master"],
-    "msc": ["master"],
-    "undergrad": ["undergraduate", "bachelor"],
-    "bachelors": ["bachelor", "undergraduate"],
-    "cs": ["computer science"],
-}
-
-
-def build_search_q(terms, fields):
-    """Every term (or one of its aliases) must match at least one of the fields."""
-    from django.db.models import Q
-
-    query = Q()
-    for term in terms:
-        term_q = Q()
-        for variant in [term, *TERM_ALIASES.get(term, [])]:
-            for field in fields:
-                term_q |= Q(**{f"{field}__icontains": variant})
-        query &= term_q
-    return query

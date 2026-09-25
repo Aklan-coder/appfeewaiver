@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | App Fee Waiver Admin{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link rel="icon" href="{% static 'img/favicon.png' %}">
+<style>
+  :root, :root[data-theme="light"] {
+    --primary: #0a1a33; --secondary: #0b8458; --accent: #22d3a0; --primary-fg: #fff;
+    --header-color: #fff; --header-branding-color: #fff; --header-bg: #0a1a33; --header-link-color: #e2e8f0;
+    --breadcrumbs-bg: #0b8458; --breadcrumbs-link-fg: #fff; --link-fg: #0b6b49; --link-hover-color: #0a1a33;
+    --button-bg: #0b8458; --button-hover-bg: #09704b; --default-button-bg: #0a1a33; --default-button-hover-bg: #11294a;
+    --selected-row: #ecfdf5;
+  }
+  #branding h1 { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  #branding img { height: 34px; }
+</style>
+{% endblock %}
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}" style="display:flex;align-items:center;gap:10px;">
+  <img src="{% static 'img/logo-light.png' %}" alt="App Fee Waiver" style="height:34px;width:auto"> <span style="font-size:14px;opacity:.85">Admin</span></a></div>
+{% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
+{% block nav-global %}<a href="/" style="color:#e2e8f0;margin-left:12px" target="_blank">View website ↗</a>{% endblock %}

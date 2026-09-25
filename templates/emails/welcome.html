@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Welcome to App Fee Waiver</title></head>
+<body style="margin:0;padding:0;background:#f3f6fa;font-family:Arial,Helvetica,sans-serif;color:#0a1a33;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f6fa;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e3e8f0;">
+        <tr><td style="background:#0a1a33;padding:22px 28px;">
+          <span style="font-size:22px;font-weight:800;color:#ffffff;">App Fee </span><span style="font-size:22px;font-weight:800;color:#22d3a0;">Waiver</span>
+          <div style="font-size:12px;color:#cbd5e1;margin-top:4px;">Scholarships &bull; Applications &bull; Opportunities</div>
+        </td></tr>
+        <tr><td style="padding:28px;">
+          <p style="font-size:16px;margin:0 0 14px;">Hello {{ registration.first_name }},</p>
+          <p style="font-size:15px;line-height:1.6;margin:0 0 14px;">Welcome to <strong>App Fee Waiver</strong>.</p>
+          <p style="font-size:15px;line-height:1.6;margin:0 0 14px;">You're now one step away from joining our community of {{ site.displayed_member_count }} students sharing scholarship opportunities, application fee waivers, admissions information and funding opportunities.</p>
+          <p style="font-size:15px;line-height:1.6;margin:0 0 22px;">Use the button below to join our WhatsApp community.</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 22px;"><tr><td style="border-radius:10px;background:#0b8458;">
+            <a href="{{ invite_link }}" style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:10px;">Join the WhatsApp Community</a>
+          </td></tr></table>
+          <p style="font-size:13px;line-height:1.5;color:#475569;margin:0 0 18px;">If the button doesn't work, copy this link into your browser:<br><a href="{{ invite_link }}" style="color:#0b8458;word-break:break-all;">{{ invite_link }}</a></p>
+          <p style="font-size:15px;line-height:1.6;margin:0;">We look forward to having you in the community.</p>
+          <p style="font-size:15px;line-height:1.6;margin:18px 0 0;"><strong>App Fee Waiver</strong><br><span style="color:#64748b;font-size:13px;">Scholarships &bull; Applications &bull; Opportunities</span></p>
+        </td></tr>
+        <tr><td style="padding:16px 28px;background:#f8fafc;border-top:1px solid #e3e8f0;font-size:12px;color:#64748b;line-height:1.5;">
+          Please don't share this invite link publicly. You received this email because you registered on the App Fee Waiver website. Questions? Reply to {{ site.contact_email }}.
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{% load afw %}
+<div class="mt-10 rounded-2xl bg-navy-900 text-white p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5">
+    <div>
+      <h2 class="font-display font-bold text-2xl">Not in the community yet?</h2>
+      <p class="mt-1 text-slate-300">Join {{ site.displayed_member_count }} students sharing scholarships, fee waivers and opportunities.</p>
+    </div>
+    <a href="{% url 'core:home' %}#join" data-join-open class="btn btn-green">{% icon "whatsapp" "h-5 w-5" %} Join the Community</a>
+  </div>

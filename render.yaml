@@ -23,5 +23,11 @@ services:
         sync: false
       - key: SITE_URL
         sync: false
-      - key: PROFILE_PHOTO_UPLOADS_ENABLED
-        value: "False"
+      - key: EMAIL_PROVIDER
+        value: brevo
+      - key: BREVO_API_KEY
+        sync: false          # from Brevo → SMTP & API → API keys
+      - key: DEFAULT_FROM_EMAIL
+        sync: false          # e.g. App Fee Waiver <appfeewaiver@gmail.com> (verified in Brevo)
+      - key: TESTIMONY_SYNC_TOKEN
+        sync: false          # same value as SYNC_TOKEN in the Google Apps Script

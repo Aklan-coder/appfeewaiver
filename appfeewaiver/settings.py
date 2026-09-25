@@ -45,24 +45,20 @@ CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", "")
 SITE_URL = os.environ.get("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "core.admin_apps.AFWAdminConfig",  # branded Django Admin (replaces django.contrib.admin)
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "django.contrib.humanize",
     "django.contrib.sitemaps",
-    # Project apps (each has one clear responsibility)
-    "core",
-    "accounts",
-    "community",
-    "opportunities",
-    "resources",
-    "support",
-    "notifications",
-    "moderation",
+    # Project apps
+    "core",  # site settings, landing page, FAQ/About/Contact
+    "accounts",  # admin user model only (no public accounts)
+    "registrations",  # WhatsApp community registration + groups
+    "testimonies",  # funding testimonies + Google Sheet sync
+    "content",  # blog posts + resources (CV/SOP formats)
 ]
 
 MIDDLEWARE = [
@@ -91,7 +87,6 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.site_context",
-                "notifications.context_processors.notifications",
             ],
         },
     },
@@ -115,9 +110,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Authentication
 # --------------------------------------------------------------------------
 AUTH_USER_MODEL = "accounts.User"
-LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "core:home"
-LOGOUT_REDIRECT_URL = "core:home"
+LOGIN_URL = "admin:login"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -126,9 +119,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# If True, members must confirm their email address before they can post.
-# Keep False until outgoing email (SMTP) is configured in production.
-REQUIRE_EMAIL_VERIFICATION = env_bool("REQUIRE_EMAIL_VERIFICATION", False)
 
 # --------------------------------------------------------------------------
 # Internationalisation
@@ -149,7 +139,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # WhiteNoise warns when `collectstatic` hasn't been run yet; that's expected locally.
-warnings.filterwarnings("ignore", message="No directory at", module="whitenoise.base")
+warnings.filterwarnings("ignore", message="No directory at")
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
@@ -162,11 +152,8 @@ STORAGES = {
     },
 }
 
-# Profile photos are the ONLY user uploads. CVs/SOPs are never uploaded.
-# Turn off on hosts without persistent disk (see docs/DEPLOYMENT.md).
-PROFILE_PHOTO_UPLOADS_ENABLED = env_bool("PROFILE_PHOTO_UPLOADS_ENABLED", True)
-FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
-DATA_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024
+# The public site accepts no file uploads.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1 * 1024 * 1024
 
 # Tailwind CSS: the project ships a pre-built static/css/tailwind.css, so no
 # Node.js is needed. If you add NEW Tailwind classes to templates, either
@@ -174,17 +161,31 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024
 TAILWIND_USE_CDN = env_bool("TAILWIND_USE_CDN", False)
 
 # --------------------------------------------------------------------------
-# Email. Console backend locally (emails print in the terminal).
-# In production, point these at any SMTP provider with a free tier.
+# Email
+#   EMAIL_PROVIDER=console  -> emails are printed in the terminal (local development)
+#   EMAIL_PROVIDER=brevo    -> sent through Brevo's HTTPS API (free tier: 300/day).
+#                              Use this on Render's free plan, which blocks SMTP ports.
+#   EMAIL_PROVIDER=smtp     -> any SMTP server (only on hosts that allow SMTP)
 # --------------------------------------------------------------------------
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_PROVIDER = os.environ.get("EMAIL_PROVIDER", "console").strip().lower()
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "App Fee Waiver <no-reply@example.com>")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if EMAIL_PROVIDER == "smtp"
+    else "django.core.mail.backends.console.EmailBackend"
+)
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "App Fee Waiver <no-reply@localhost>")
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_TIMEOUT = 20
+
+# Google Sheet testimony sync: shared secret between the Google Apps Script
+# (docs/google-apps-script.js) and this site. The script URL itself is set in Site Settings.
+TESTIMONY_SYNC_TOKEN = os.environ.get("TESTIMONY_SYNC_TOKEN", "")
 
 # --------------------------------------------------------------------------
 # Cache (used by rate limiting and site settings). Local memory is fine for a
@@ -222,8 +223,4 @@ LOGGING = {
     "root": {"handlers": ["console"], "level": os.environ.get("LOG_LEVEL", "INFO")},
 }
 
-# Pagination sizes
-POSTS_PER_PAGE = 15
-OPPORTUNITIES_PER_PAGE = 12
-RESOURCES_PER_PAGE = 12
-SEARCH_RESULTS_PER_PAGE = 20
+TESTIMONIES_PER_PAGE = 12

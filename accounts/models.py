@@ -45,8 +45,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
     """
-    Members sign in with their email address. The email is private and is
-    never shown publicly; public pages use `display_name` and `handle`.
+    Admin/staff accounts only. The public website has no member accounts.
+    (Some fields are kept from the earlier version so no existing data is dropped.)
     """
 
     username = None
@@ -102,18 +102,6 @@ class User(AbstractUser):
     def is_moderator(self):
         return self.is_superuser or self.groups.filter(name="Moderator").exists()
 
-    @property
-    def can_participate(self):
-        """Can this member post, comment, react, report and submit?"""
-        if not self.is_active or self.is_suspended:
-            return False
-        if settings.REQUIRE_EMAIL_VERIFICATION and not self.email_verified:
-            return False
-        return True
-
-    def get_absolute_url(self):
-        return reverse("accounts:profile", args=[self.handle])
-
 
 def profile_photo_path(instance, filename):
     ext = filename.rsplit(".", 1)[-1].lower()
@@ -122,8 +110,8 @@ def profile_photo_path(instance, filename):
 
 class Profile(models.Model):
     """
-    Optional details a member may add after signing up. Members choose what
-    appears publicly with the `show_*` switches.
+    LEGACY (earlier version with member accounts). Not used by the website any
+    more; kept only so the existing database table is not dropped without your say-so.
     """
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")

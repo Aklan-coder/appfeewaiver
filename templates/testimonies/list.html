@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load afw %}
+{% block title %}Funding Testimonies | App Fee Waiver{% endblock %}
+{% block meta_description %}Real stories from App Fee Waiver community members who received admissions, scholarships, application fee waivers, assistantships and fellowships.{% endblock %}
+{% block og_title %}Funding Testimonies – App Fee Waiver{% endblock %}
+{% block og_description %}Real success stories from our WhatsApp community members.{% endblock %}
+{% block canonical %}{{ SITE_URL }}{{ request.path }}{% if active_type %}?type={{ active_type }}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-dots" aria-hidden="true"></div>
+  <div class="max-w-site mx-auto px-4 sm:px-6 py-10 sm:py-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <div class="max-w-2xl">
+      <p class="text-xs font-semibold tracking-[0.28em] text-slate-200">SUCCESS STORIES</p>
+      <h1 class="mt-3 font-display font-extrabold text-3xl sm:text-5xl">Funding <span class="hero-highlight">Testimonies</span></h1>
+      <p class="mt-3 text-slate-200 sm:text-lg">Real stories from our community members who received admissions, scholarships, fee waivers and other opportunities.</p>
+    </div>
+    {% if site.testimony_form_url %}
+      <a href="{{ site.testimony_form_url }}" target="_blank" rel="noopener" class="btn btn-green self-start md:self-auto">Share Your Story {% icon "external" "h-4 w-4" %}</a>
+    {% else %}
+      <a href="mailto:{{ site.contact_email }}?subject=My%20funding%20testimony" class="btn btn-green self-start md:self-auto">Share Your Story {% icon "mail" "h-4 w-4" %}</a>
+    {% endif %}
+  </div>
+</section>
+
+<div class="max-w-site mx-auto px-4 sm:px-6 py-8">
+  <nav class="flex gap-2 overflow-x-auto pb-1" aria-label="Filter by category">
+    {% for value, label in filters %}
+      <a class="chip" href="{% if value %}?type={{ value }}{% else %}{% url 'testimonies:list' %}{% endif %}" {% if active_type == value %}aria-current="true"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if page_obj.object_list %}
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {% for t in page_obj %}{% include "partials/testimony_card.html" %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-6 card p-10 text-center">
+      <p class="font-semibold">No testimonies here yet.</p>
+      <p class="mt-1 text-sm text-slate-600">Got funded? Share your story and inspire other members.</p>
+    </div>
+  {% endif %}
+
+  {% if page_obj.has_other_pages %}
+    <nav class="mt-8 flex items-center justify-between" aria-label="Pagination">
+      {% if page_obj.has_previous %}<a class="btn btn-outline" href="{% page_url page_obj.previous_page_number %}" rel="prev">&larr; Previous</a>{% else %}<span></span>{% endif %}
+      <span class="text-sm text-slate-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}<a class="btn btn-outline" href="{% page_url page_obj.next_page_number %}" rel="next">Next &rarr;</a>{% else %}<span></span>{% endif %}
+    </nav>
+  {% endif %}
+
+  {% include "partials/join_cta.html" %}
+</div>
+{% endblock %}

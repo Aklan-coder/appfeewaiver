@@ -1,116 +1,111 @@
 # Deploying App Fee Waiver for free
 
-Target setup: **GitHub** (code) → **Render** free web service (Django) + **Neon** free PostgreSQL + your domain.
+Setup: **GitHub** (code) → **Render** free web service (Django) + **Neon** free PostgreSQL
++ **Brevo** free email API + a **Google Sheet** for testimonies. The only cost is your domain.
 
-> Free tiers change. Check the current limits before you start: [Render free tier](https://render.com/docs/free), [Neon free plan](https://neon.com/pricing).
+> Free tiers change. Check current limits: [Render free](https://render.com/docs/free),
+> [Neon pricing](https://neon.com/pricing), [Brevo pricing](https://www.brevo.com/pricing/).
 
 ---
 
-## Before you deploy
+## Updating the existing live site (you already have Render + Neon)
 
-1. Remove demo content locally if you loaded it: `python manage.py remove_demo_data`.
-2. Run the tests: `python manage.py test` (all should pass).
-3. If you changed templates with new Tailwind classes, rebuild the CSS (`npm run build:css`) and commit it.
-4. Push to GitHub (see README section 8). Confirm `.env` is **not** in the repository.
+1. Replace your project folder with the new version (see the README, "Updating from the old version").
+2. On your computer: `python manage.py migrate` and `python manage.py test`.
+3. `git add -A`, `git commit -m "Rebuild as single-page site"`, `git push`.
+4. Render → Environment → **add** the new variables below (`EMAIL_PROVIDER`, `BREVO_API_KEY`,
+   `DEFAULT_FROM_EMAIL`, `TESTIMONY_SYNC_TOKEN`) and **delete** `PROFILE_PHOTO_UPLOADS_ENABLED`
+   and `REQUIRE_EMAIL_VERIFICATION` if you have them.
+5. Render redeploys and runs the migrations. Your admin login still works.
+6. Admin → **WhatsApp groups** → add your two groups. Admin → **Site settings** → fill in.
 
-## Step 1: Create the database (Neon)
+### What happens to the old data?
+The migration **does not delete** the old forum tables (posts, comments, opportunities, resources,
+notifications, reports, member profiles). They just sit unused in Neon. Your admin users and the site
+settings are kept (the old contact email is carried over).
 
-1. Sign up at [neon.com](https://neon.com) (free, no card needed at the time of writing).
-2. Create a project (choose the region closest to your Render region).
-3. Copy the **connection string**. It looks like
-   `postgresql://user:password@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require`
+When you're sure you don't need that data, you can list and then remove the old tables:
 
-## Step 2: Create the web service (Render)
+```bash
+python manage.py drop_legacy_tables            # only LISTS them
+python manage.py drop_legacy_tables --confirm  # actually deletes them (cannot be undone)
+```
+Tip: take a Neon backup/branch first (Neon dashboard → Branches → Create branch).
 
-1. Sign up at [render.com](https://render.com) with your GitHub account.
-2. **New → Web Service** → pick your `appfeewaiver` repository.
-3. Settings:
-   - **Runtime:** Python 3
-   - **Build command:** `./build.sh`
-   - **Start command:** `gunicorn appfeewaiver.wsgi:application`
-   - **Instance type:** Free
-4. **Environment variables** (Environment tab):
+---
+
+## Fresh deployment
+
+### Step 1: Database (Neon)
+1. Sign up at neon.com, create a project (pick the region closest to your Render region).
+2. Copy the **connection string**: `postgresql://user:password@ep-xxxx.aws.neon.tech/neondb?sslmode=require`
+
+### Step 2: Web service (Render)
+1. render.com → **New → Web Service** → pick the `appfeewaiver` repository.
+2. **Runtime:** Python 3 · **Build command:** `./build.sh` · **Start command:** `gunicorn appfeewaiver.wsgi:application` · **Instance type:** Free
+3. **Environment variables:**
 
 | Key | Value |
 |---|---|
 | `PYTHON_VERSION` | `3.12.7` |
 | `DEBUG` | `False` |
-| `SECRET_KEY` | a long random string: run `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `SECRET_KEY` | long random string: `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
 | `DATABASE_URL` | the Neon connection string |
 | `DB_SSL_REQUIRE` | `True` |
-| `ALLOWED_HOSTS` | `your-app.onrender.com,appfeewaiver.com,www.appfeewaiver.com` |
-| `CSRF_TRUSTED_ORIGINS` | `https://your-app.onrender.com,https://appfeewaiver.com,https://www.appfeewaiver.com` |
-| `SITE_URL` | `https://appfeewaiver.com` (or the onrender.com URL until your domain is ready) |
-| `PROFILE_PHOTO_UPLOADS_ENABLED` | `False` (Render's free disk is wiped on every deploy; members get initials avatars) |
+| `ALLOWED_HOSTS` | `appfeewaiver.onrender.com,appfeewaiver.com,www.appfeewaiver.com` |
+| `CSRF_TRUSTED_ORIGINS` | `https://appfeewaiver.onrender.com,https://appfeewaiver.com,https://www.appfeewaiver.com` |
+| `SITE_URL` | `https://appfeewaiver.com` (or the onrender.com URL until the domain is ready) |
+| `EMAIL_PROVIDER` | `brevo` |
+| `BREVO_API_KEY` | from Brevo ([EMAIL_SETUP.md](EMAIL_SETUP.md)) |
+| `DEFAULT_FROM_EMAIL` | `App Fee Waiver <appfeewaiver@gmail.com>` (a Brevo-verified sender) |
+| `TESTIMONY_SYNC_TOKEN` | long random string, same as in the Apps Script ([GOOGLE_SHEET_SETUP.md](GOOGLE_SHEET_SETUP.md)) |
 
-(Alternatively, use **New → Blueprint** and Render reads `render.yaml`; you still paste the values marked `sync: false`.)
+4. **Create Web Service.** `build.sh` installs packages, collects static files and runs migrations.
 
-5. Click **Create Web Service**. `build.sh` installs packages, collects static files and runs migrations. Categories, opportunity types and the Moderator role are created automatically.
+### Step 3: Admin account
+Render → service → **Shell**: `python manage.py createsuperuser`.
+If Shell isn't available on the free plan, run it on your computer with `DATABASE_URL` in your local
+`.env` temporarily set to the Neon string, then set it back. There is no public admin sign-up.
 
-## Step 3: Create your admin account
+### Step 4: Set up in Admin (`/admin/`)
+1. **WhatsApp groups → Add**: "Community Group 1" + invite link; then "Community Group 2" + invite link.
+   New registrations alternate between active groups. Set a **capacity** to stop assigning a group once full.
+2. **Site settings**: member count (e.g. `2,000+`), contact email, the testimony form + sync URLs,
+   the answer to "Is the community free?" (hidden until you write it), and social links (icons appear only when set).
+3. Register yourself on the live site to check the welcome email arrives.
 
-In Render, open your service → **Shell** and run:
-
-```bash
-python manage.py createsuperuser
-```
-
-If Shell isn't available on the free plan, run the same command **on your computer** with `DATABASE_URL` in your local `.env` temporarily set to the Neon string, then set it back.
-
-Then log in at `https://your-app.onrender.com/admin/` → **Site settings** → set the emails.
-
-## Step 4: Connect your domain
-
-1. Render → your service → **Settings → Custom Domains → Add** `appfeewaiver.com` and `www.appfeewaiver.com`.
-2. At your domain registrar, add the DNS records Render shows you (usually a CNAME for `www` and an A/ALIAS record for the root).
-3. Render issues a free HTTPS certificate automatically.
-4. Update `SITE_URL`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` if you haven't already.
-
-## Step 5 (optional): Outgoing email
-
-Needed for email verification and "forgot password". With Gmail (free):
-
-1. Turn on 2-Step Verification for the Google account, then create an **App Password**.
-2. Add in Render:
-
-| Key | Value |
-|---|---|
-| `EMAIL_BACKEND` | `django.core.mail.backends.smtp.EmailBackend` |
-| `EMAIL_HOST` | `smtp.gmail.com` |
-| `EMAIL_PORT` | `587` |
-| `EMAIL_USE_TLS` | `True` |
-| `EMAIL_HOST_USER` | the Gmail address |
-| `EMAIL_HOST_PASSWORD` | the App Password |
-| `DEFAULT_FROM_EMAIL` | `App Fee Waiver <that address>` |
-
-3. Once emails arrive reliably, you may set `REQUIRE_EMAIL_VERIFICATION=True` so only confirmed members can post.
+### Step 5: Domain
+Render → **Settings → Custom Domains** → add `appfeewaiver.com` and `www.appfeewaiver.com`, add the DNS
+records Render shows at your registrar. HTTPS is automatic. Update `SITE_URL`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`.
 
 ---
 
-## Deployment checklist
+## Checklist
+- [ ] `DEBUG=False`, new random `SECRET_KEY` (never committed)
+- [ ] `DATABASE_URL` → Neon, `DB_SSL_REQUIRE=True`
+- [ ] `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, `SITE_URL` include the real domain
+- [ ] `EMAIL_PROVIDER=brevo`, `BREVO_API_KEY`, verified `DEFAULT_FROM_EMAIL`, and a test registration received the email
+- [ ] Two WhatsApp groups added and active
+- [ ] `TESTIMONY_SYNC_TOKEN` set in Render and in the Apps Script; "Sync from Google Sheet now" succeeds
+- [ ] No demo data in production (`python manage.py remove_demo_data`)
+- [ ] Phone test: register, open menu, FAQ, testimonies filters
 
-- [ ] Demo data removed (`remove_demo_data`)
-- [ ] Tests pass locally
-- [ ] `DEBUG=False` in production
-- [ ] New random `SECRET_KEY` set in Render (never committed)
-- [ ] `DATABASE_URL` points to Neon, `DB_SSL_REQUIRE=True`
-- [ ] `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, `SITE_URL` include your real domain with `https://`
-- [ ] `PROFILE_PHOTO_UPLOADS_ENABLED=False` on hosts without a permanent disk
-- [ ] Superuser created; Site Settings emails configured
-- [ ] At least one moderator assigned
-- [ ] Privacy Policy and Terms reviewed by your team
-- [ ] Visit `/sitemap.xml` and `/robots.txt` on the live domain
-- [ ] Test on a phone: sign up, post, comment, save, CV/SOP email buttons
-
-## Security notes (already configured)
-
-- CSRF protection on every form; passwords hashed by Django (PBKDF2).
-- With `DEBUG=False`: HTTPS redirect, secure cookies, HSTS, `X-Frame-Options: DENY`, no-sniff, strict referrer policy.
-- Rate limits on sign-up, login, password reset, posting, commenting, reporting and submissions; honeypot fields on public forms.
+## Security (already configured)
+- The WhatsApp links live only in the database and in the welcome email. They are never in page HTML or JavaScript.
+- The success message is identical for new and already-registered emails (nobody can check who registered).
+- Rate limit (6 registration attempts per hour per IP) and a hidden honeypot field against bots.
+- Testimony emails are private: never shown on the website.
+- Only approved rows with publishing permission are imported; syncs never delete anything.
+- With `DEBUG=False`: HTTPS redirect, secure cookies, HSTS, clickjacking and no-sniff headers.
 - Secrets only in environment variables; `.env` is git-ignored.
-- Members' emails are never shown publicly.
-- If you run more than one Gunicorn worker, set `CACHE_BACKEND=django.core.cache.backends.db.DatabaseCache`, `CACHE_LOCATION=cache_table` and run `python manage.py createcachetable` so rate limits are shared.
+- If you ever run more than one Gunicorn worker, set `CACHE_BACKEND=django.core.cache.backends.db.DatabaseCache`,
+  `CACHE_LOCATION=cache_table` and run `python manage.py createcachetable` so rate limits are shared.
 
-## Updating the live site
+## Keeping testimonies syncing
+The site checks the sheet on its own when people visit (every 60 minutes by default). Render's free service
+sleeps after ~15 minutes without visitors, so a sync may wait until the next visit. For a fixed schedule, a free
+service such as cron-job.org can open `https://appfeewaiver.com/testimonies/sync/?token=YOUR_TOKEN` hourly
+(this also wakes the site up).
 
-Push to the `main` branch on GitHub; Render redeploys automatically and runs migrations. After changing models locally, run `python manage.py makemigrations`, commit the new migration files, then push.
+## Updating later
+Push to `main` on GitHub. Render redeploys and runs migrations automatically.

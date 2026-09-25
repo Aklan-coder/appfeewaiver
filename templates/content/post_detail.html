@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load afw %}
+{% block title %}{{ post.title }} | App Fee Waiver{% endblock %}
+{% block meta_description %}{{ post.summary }}{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.summary }}{% endblock %}
+{% block robots %}{% if not post.published or post.is_demo %}<meta name="robots" content="noindex">{% endif %}{% endblock %}
+
+{% block content %}
+<article class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+  <a href="{% url 'content:blog' %}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-600">{% icon "arrow-left" "h-4 w-4" %} All posts</a>
+  {% if not post.published %}<p class="mt-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-900">Draft preview: only admins can see this post.</p>{% endif %}
+  <p class="mt-6 text-xs font-semibold uppercase tracking-wide accent-text {{ post.category|post_accent }}">{{ post.get_category_display }}</p>
+  <h1 class="mt-2 font-display font-extrabold text-3xl sm:text-[2.6rem] leading-tight">{{ post.title }}</h1>
+  <p class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+    <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"F j, Y" }}</time>
+    {% if post.deadline %}<span class="inline-flex items-center gap-1 font-semibold text-rose-700">{% icon "calendar" "h-4 w-4" %} Deadline: {{ post.deadline|date:"F j, Y" }}</span>{% endif %}
+  </p>
+  {% if post.cover_image_url %}
+    <img src="{{ post.cover_image_url }}" alt="" referrerpolicy="no-referrer" class="mt-6 w-full max-h-[26rem] object-cover rounded-2xl bg-slate-100">
+  {% endif %}
+  <div class="prose-afw mt-6">{{ post.body|urlize|linebreaks }}</div>
+  {% if post.apply_url %}
+    <a href="{{ post.apply_url }}" target="_blank" rel="noopener" class="btn btn-green mt-8">Visit the official page {% icon "external" "h-4 w-4" %}</a>
+  {% endif %}
+  <p class="mt-8 text-sm text-slate-500">Always confirm deadlines and eligibility on the official website before applying.</p>
+
+  {% if related %}
+    <h2 class="mt-12 font-display font-bold text-xl">More {{ post.get_category_display|lower }}</h2>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      {% for post in related %}{% include "partials/post_card.html" %}{% endfor %}
+    </div>
+  {% endif %}
+
+  {% include "partials/join_cta.html" %}
+</article>
+{% endblock %}

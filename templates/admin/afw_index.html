@@ -1,0 +1,36 @@
+{% extends "admin/index.html" %}
+{% block content %}
+<div style="margin-bottom:24px">
+  <h2 style="margin:0 0 12px;font-size:18px">At a glance</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+    {% for label, value, link in dashboard_stats %}
+      <a href="{{ link }}" style="display:block;padding:16px;border:1px solid var(--hairline-color);border-radius:10px;background:var(--body-bg);text-decoration:none">
+        <div style="font-size:12px;color:var(--body-quiet-color);text-transform:uppercase;letter-spacing:.04em">{{ label }}</div>
+        <div style="font-size:30px;font-weight:700;color:{% if label == 'Email Delivery Failures' and value %}#b91c1c{% else %}var(--body-fg){% endif %};margin-top:4px">{{ value }}</div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <h2 style="margin:24px 0 12px;font-size:18px">WhatsApp groups</h2>
+  {% if whatsapp_groups %}
+    <table style="width:100%">
+      <thead><tr><th>Group</th><th>Status</th><th>Website registrations assigned</th><th>Capacity</th></tr></thead>
+      <tbody>
+        {% for g in whatsapp_groups %}
+          <tr><td><a href="{% url 'admin:registrations_whatsappgroup_change' g.pk %}">{{ g.name }}</a></td>
+            <td>{% if g.is_active %}✅ Active{% else %}⏸ Inactive{% endif %}</td>
+            <td>{{ g.assigned_count }}</td><td>{{ g.capacity|default:"—" }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p style="color:#b91c1c"><strong>No WhatsApp groups yet.</strong> <a href="{% url 'admin:registrations_whatsappgroup_add' %}">Add your first group</a> so registrations can receive a link.</p>
+  {% endif %}
+
+  <p style="margin-top:16px;color:var(--body-quiet-color)">Last Google Sheet sync:
+    {% if last_sync %}{{ last_sync.started_at|date:"M j, Y H:i" }} – {{ last_sync.get_status_display }} ({{ last_sync.message|truncatechars:120 }}){% else %}never{% endif %}
+    · <a href="{% url 'admin:testimonies_testimony_changelist' %}">Testimonies</a>
+  </p>
+</div>
+{{ block.super }}
+{% endblock %}

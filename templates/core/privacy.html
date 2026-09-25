@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Privacy | App Fee Waiver{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+  <h1 class="font-display font-bold text-3xl">Privacy</h1>
+  <div class="card p-6 mt-6 space-y-4 text-slate-700 leading-relaxed">
+    <p><strong>What we collect when you join:</strong> your name, email address, country, current level and (optionally) field of study.</p>
+    <p><strong>Why:</strong> to email you the WhatsApp community link and to understand who our community serves. We don't sell your information.</p>
+    <p><strong>Your email address is never shown publicly.</strong> The WhatsApp link is only sent to the email you register with.</p>
+    <p><strong>Testimonies:</strong> stories submitted through our Google Form are only published if you gave permission and our team approved them. Your email is never published.</p>
+    <p><strong>Cookies:</strong> this site only uses the essential security cookie needed for its forms.</p>
+    <p>To have your details removed, email <a class="text-brand-700 font-semibold underline" href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a>.</p>
+  </div>
+</div>
+{% endblock %}

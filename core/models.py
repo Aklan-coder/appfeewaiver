@@ -5,48 +5,56 @@ from django.db import models
 SITE_SETTINGS_CACHE_KEY = "core:site_settings"
 
 
-class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
 class SiteSettings(models.Model):
     """
-    Single-row configuration editable from Django Admin.
+    One row of settings, edited in Django Admin → Site settings.
+    Every change here shows on the website immediately: no code change,
+    GitHub commit or redeploy needed.
 
-    Every email button on the site (CV review, SOP review, appointments,
-    contact) reads from here, so changing an address in the admin updates
-    the whole site immediately. Leave a specific address blank to fall back
-    to the primary email.
+    WhatsApp invite links are NOT stored here: they live in
+    Registrations → WhatsApp groups, so you can run several groups.
     """
 
-    primary_email = models.EmailField(
-        help_text="Main App Fee Waiver address. Used wherever a specific address below is left blank."
+    site_name = models.CharField(max_length=80, default="App Fee Waiver")
+    displayed_member_count = models.CharField(
+        max_length=30, default="2,000+", help_text="Shown in the headline and stats, e.g. 2,000+"
     )
-    contact_email = models.EmailField(blank=True, help_text="General inquiries.")
-    cv_review_email = models.EmailField(blank=True, help_text="Where members send CVs for review.")
-    sop_review_email = models.EmailField(blank=True, help_text="Where members send SOPs for review.")
-    appointment_email = models.EmailField(blank=True, help_text="Where appointment requests go.")
-    support_email = models.EmailField(blank=True, help_text="Account / technical support.")
-    partnership_email = models.EmailField(blank=True, help_text="Partnerships and collaborations.")
+    contact_email = models.EmailField(
+        default="appfeewaiver@gmail.com", help_text="Shown on the site for questions and registration problems."
+    )
+    registration_enabled = models.BooleanField(
+        default=True, help_text="Untick to pause new registrations (the form is replaced by a short notice)."
+    )
+    homepage_announcement = models.CharField(
+        max_length=200, blank=True, help_text="Optional one-line message shown at the top of the site."
+    )
 
-    member_count_display = models.CharField(
-        max_length=30,
-        default="2,000+",
-        help_text="Community size shown on the site (the wider community, not only website accounts).",
+    # FAQ answer that depends on your policy (left blank = question hidden)
+    community_free_answer = models.TextField(
+        "answer to “Is the community free?”",
+        blank=True,
+        help_text="Write your actual policy. The question is hidden on the site while this is empty.",
     )
-    community_group_name = models.CharField(
-        max_length=80, blank=True, help_text="Optional, e.g. 'App Fee Waiver WhatsApp Group'."
+
+    # Testimonies
+    testimony_form_url = models.URLField(
+        "Google testimony form URL", blank=True, help_text="Opens when people click “Share Your Story” on the Funding Testimonies page."
     )
-    community_group_url = models.URLField(
-        blank=True, help_text="Optional invite link. The 'Join Our Group' card only appears when this is set."
+    testimony_sync_url = models.URLField(
+        "Google Apps Script sync URL",
+        blank=True,
+        help_text="The web-app URL from docs/GOOGLE_SHEET_SETUP.md. Only approved rows are imported.",
     )
-    announcement_banner = models.CharField(
-        max_length=200, blank=True, help_text="Optional short message shown at the top of every page."
+    testimony_sync_interval_minutes = models.PositiveSmallIntegerField(
+        default=60, help_text="How often the site checks the Google Sheet for newly approved testimonies."
     )
+
+    # Social links (icons only appear for links you fill in)
+    x_url = models.URLField("X (Twitter) URL", blank=True)
+    linkedin_url = models.URLField("LinkedIn URL", blank=True)
+    youtube_url = models.URLField("YouTube URL", blank=True)
+    instagram_url = models.URLField("Instagram URL", blank=True)
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -65,42 +73,20 @@ class SiteSettings(models.Model):
         super().save(*args, **kwargs)
         cache.delete(SITE_SETTINGS_CACHE_KEY)
 
-    def delete(self, *args, **kwargs):
-        cache.delete(SITE_SETTINGS_CACHE_KEY)
-        return super().delete(*args, **kwargs)
-
     @classmethod
     def load(cls):
         obj = cache.get(SITE_SETTINGS_CACHE_KEY)
         if obj is None:
-            obj, _ = cls.objects.get_or_create(pk=1, defaults={"primary_email": "appfeewaiver@gmail.com"})
-            cache.set(SITE_SETTINGS_CACHE_KEY, obj, 300)
+            obj, _ = cls.objects.get_or_create(pk=1)
+            cache.set(SITE_SETTINGS_CACHE_KEY, obj, 60)
         return obj
 
-    # Resolved addresses (fall back to the primary email)
-    def _resolve(self, value):
-        return value or self.primary_email
-
     @property
-    def contact(self):
-        return self._resolve(self.contact_email)
-
-    @property
-    def cv_review(self):
-        return self._resolve(self.cv_review_email)
-
-    @property
-    def sop_review(self):
-        return self._resolve(self.sop_review_email)
-
-    @property
-    def appointment(self):
-        return self._resolve(self.appointment_email)
-
-    @property
-    def support(self):
-        return self._resolve(self.support_email)
-
-    @property
-    def partnership(self):
-        return self._resolve(self.partnership_email)
+    def social_links(self):
+        links = [
+            ("x", "X", self.x_url),
+            ("linkedin", "LinkedIn", self.linkedin_url),
+            ("youtube", "YouTube", self.youtube_url),
+            ("instagram", "Instagram", self.instagram_url),
+        ]
+        return [(key, label, url) for key, label, url in links if url]

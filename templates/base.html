@@ -2,82 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <script>document.documentElement.classList.add("js")</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token }}">
-  {% with default_description="App Fee Waiver helps students discover scholarships, application fee waivers, funding opportunities and university application support through a global community." %}
-  <title>{% block title %}App Fee Waiver – Scholarships • Applications • Opportunities{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}{{ default_description }}{% endblock %}">
+  <title>{% block title %}App Fee Waiver | Scholarships, Application Fee Waivers &amp; Student Community{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Join {{ site.displayed_member_count }} students in the App Fee Waiver WhatsApp community for application fee waivers, scholarships, admissions updates and funding opportunities.{% endblock %}">
   <link rel="canonical" href="{% block canonical %}{{ SITE_URL }}{{ request.path }}{% endblock %}">
   <meta property="og:site_name" content="App Fee Waiver">
-  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
-  <meta property="og:title" content="{% block og_title %}App Fee Waiver – Scholarships • Applications • Opportunities{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}{{ default_description }}{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_title %}App Fee Waiver – Join {{ site.displayed_member_count }} students on our WhatsApp Community{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Application fee waivers, scholarships, admissions updates and opportunities, shared by a global community of students.{% endblock %}">
   <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
-  <meta property="og:image" content="{{ SITE_URL }}{% static 'img/og-image.png' %}">
+  <meta property="og:image" content="{{ SITE_URL }}{% static 'img/og-image.jpg' %}">
   <meta name="twitter:card" content="summary_large_image">
-  {% endwith %}
-  {% block robots %}{% endblock %}
   <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
   <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
   <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
-  <meta name="theme-color" content="#0a172d">
+  <meta name="theme-color" content="#0a1a33">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"App Fee Waiver","url":"{{ SITE_URL }}","logo":"{{ SITE_URL }}{% static 'img/logo.png' %}"}</script>
+  {% block robots %}{% endblock %}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-
+  <link rel="preload" href="{% static 'fonts/inter-var.woff' %}" as="font" type="font/woff" crossorigin>
   {% if TAILWIND_USE_CDN %}
-    {# Development: no Node.js needed. #}
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script src="{% static 'js/tailwind-cdn-config.js' %}"></script>
     <style type="text/tailwindcss">{% inline_static 'css/components.css' %}</style>
   {% else %}
-    {# Production: built with `npm run build:css` (includes components.css). #}
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
   {% endif %}
-  <script defer src="{% static 'js/app.js' %}"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-  {% block extra_head %}{% endblock %}
+  <style>
+    @font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("{% static 'fonts/inter-var.woff' %}") format("woff"); }
+    @font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 600 800; font-display: swap; src: url("{% static 'fonts/plus-jakarta-sans-var.woff' %}") format("woff"); }
+    .hero-photo { background-image: url("{% static 'img/hero-student-900.jpg' %}"); background-image: image-set(url("{% static 'img/hero-student-900.webp' %}") type("image/webp"), url("{% static 'img/hero-student-900.jpg' %}") type("image/jpeg")); }
+    @media (min-width: 1024px) { .hero-photo { background-image: url("{% static 'img/hero-student-1400.jpg' %}"); background-image: image-set(url("{% static 'img/hero-student-1400.webp' %}") type("image/webp"), url("{% static 'img/hero-student-1400.jpg' %}") type("image/jpeg")); } }
+  </style>
+  <script defer src="{% static 'js/site.js' %}"></script>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased">
   <a href="#main" class="skip-link">Skip to main content</a>
 
-  {% if site.announcement_banner %}
-    <div class="bg-navy-900 text-white text-sm">
-      <div class="max-w-site mx-auto px-4 py-2 text-center">{{ site.announcement_banner }}</div>
-    </div>
+  {% if site.homepage_announcement %}
+    <div class="bg-brand-600 text-white text-sm"><p class="max-w-site mx-auto px-4 py-2 text-center">{{ site.homepage_announcement }}</p></div>
   {% endif %}
 
-  {% include "partials/header.html" %}
+  {% with page=request.resolver_match.url_name %}
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200/80" data-menu>
+    <div class="max-w-site mx-auto px-4 sm:px-6 h-16 lg:h-[4.25rem] flex items-center gap-4">
+      <a href="{% url 'core:home' %}" class="shrink-0" aria-label="App Fee Waiver home">
+        <img src="{% static 'img/logo.png' %}" alt="App Fee Waiver – Scholarships • Applications • Opportunities" width="720" height="150" class="h-9 sm:h-11 w-auto">
+      </a>
+      <nav class="hidden lg:flex items-center gap-10 mx-auto" aria-label="Main">
+        <a class="nav-link" href="{% url 'core:home' %}" {% if page == 'home' %}aria-current="page"{% endif %}>Home</a>
+        <a class="nav-link" href="{% url 'content:blog' %}" {% if page == 'blog' or page == 'post' %}aria-current="page"{% endif %}>Blogs</a>
+        <a class="nav-link" href="{% url 'content:resources' %}" {% if page == 'resources' %}aria-current="page"{% endif %}>Resources</a>
+        <a class="nav-link" href="{% url 'core:home' %}#about">About Us</a>
+      </nav>
+      <a href="{% url 'core:home' %}#join" data-join-open class="btn btn-green hidden lg:inline-flex">{% icon "whatsapp" "h-5 w-5" %} Join the Community</a>
+      <button type="button" class="lg:hidden ml-auto p-2 -mr-2 rounded-lg hover:bg-slate-100" data-menu-button aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <span data-menu-open>{% icon "menu" "h-6 w-6" %}</span><span data-menu-close hidden>{% icon "x" "h-6 w-6" %}</span>
+      </button>
+    </div>
+    <div id="mobile-menu" class="lg:hidden border-t border-slate-200 bg-white" hidden>
+      <nav class="px-4 py-3 grid gap-1" aria-label="Mobile">
+        <a class="px-3 py-3 rounded-lg font-medium hover:bg-slate-100 {% if page == 'home' %}text-brand-700 bg-brand-50{% endif %}" href="{% url 'core:home' %}">Home</a>
+        <a class="px-3 py-3 rounded-lg font-medium hover:bg-slate-100 {% if page == 'blog' or page == 'post' %}text-brand-700 bg-brand-50{% endif %}" href="{% url 'content:blog' %}">Blogs</a>
+        <a class="px-3 py-3 rounded-lg font-medium hover:bg-slate-100 {% if page == 'resources' %}text-brand-700 bg-brand-50{% endif %}" href="{% url 'content:resources' %}">Resources</a>
+        <a class="px-3 py-3 rounded-lg font-medium hover:bg-slate-100" href="{% url 'core:home' %}#about">About Us</a>
+        <a href="{% url 'core:home' %}#join" data-join-open class="btn btn-green mt-2 w-full">{% icon "whatsapp" "h-5 w-5" %} Join the Community</a>
+      </nav>
+    </div>
+  </header>
+  {% endwith %}
 
-  {% if user.is_authenticated and not user.email_verified %}
-    <div class="bg-amber-50 border-b border-amber-200 text-amber-900 text-sm">
-      <div class="max-w-site mx-auto px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-        {% icon "mail" "h-4 w-4 shrink-0" %}
-        <span>Please confirm your email address{% if REQUIRE_EMAIL_VERIFICATION %} before posting{% endif %}. Check your inbox for the link.</span>
-        <form method="post" action="{% url 'accounts:resend_verification' %}">{% csrf_token %}
-          <button class="font-semibold underline underline-offset-2">Resend link</button>
-        </form>
-      </div>
+  {% if messages %}
+    <div class="max-w-site mx-auto px-4 sm:px-6 mt-4 space-y-2" aria-live="polite">
+      {% for message in messages %}
+        <p class="rounded-lg border px-4 py-3 text-sm {% if message.tags == 'error' %}bg-red-50 border-red-200 text-red-900{% else %}bg-brand-50 border-brand-200 text-brand-900{% endif %}">{{ message }}</p>
+      {% endfor %}
     </div>
   {% endif %}
-  {% if user.is_authenticated and user.is_suspended %}
-    <div class="bg-red-50 border-b border-red-200 text-red-900 text-sm">
-      <div class="max-w-site mx-auto px-4 py-2">Your account is suspended from posting until {{ user.suspended_until|date:"M j, Y H:i" }}. You can still browse the site.</div>
-    </div>
-  {% endif %}
-
-  {% include "partials/messages.html" %}
 
   <main id="main" class="flex-1" tabindex="-1">
     {% block content %}{% endblock %}
   </main>
 
-  {% include "partials/footer.html" %}
+  <footer class="bg-navy-900 text-slate-300">
+    <div class="max-w-site mx-auto px-4 sm:px-6 py-8 grid gap-6 lg:grid-cols-[auto_1fr_auto] items-center">
+      <a href="{% url 'core:home' %}" aria-label="App Fee Waiver home">
+        <img src="{% static 'img/logo-light.png' %}" alt="App Fee Waiver – Scholarships • Applications • Opportunities" width="720" height="150" class="h-12 w-auto" loading="lazy">
+      </a>
+      <nav class="flex flex-wrap gap-x-7 gap-y-2 lg:justify-center text-sm" aria-label="Footer">
+        <a class="hover:text-white" href="{% url 'core:home' %}">Home</a>
+        <a class="hover:text-white" href="{% url 'content:blog' %}">Blogs</a>
+        <a class="hover:text-white" href="{% url 'content:resources' %}">Resources</a>
+        <a class="hover:text-white" href="{% url 'testimonies:list' %}">Funding Testimonies</a>
+        <a class="hover:text-white" href="{% url 'core:home' %}#faq">FAQ</a>
+        <a class="hover:text-white" href="{% url 'core:home' %}#about">About Us</a>
+        <a class="hover:text-white" href="{% url 'core:home' %}#contact">Contact</a>
+      </nav>
+      <div class="lg:text-right">
+        {% if site.social_links %}
+          <ul class="flex gap-4 lg:justify-end mb-2">
+            {% for key, label, url in site.social_links %}
+              <li><a href="{{ url }}" target="_blank" rel="noopener" class="text-white hover:text-brand-400" aria-label="App Fee Waiver on {{ label }}">{% icon "social-"|add:key "h-5 w-5" %}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <p class="text-xs text-slate-400">&copy; {{ current_year }} App Fee Waiver. All rights reserved. · <a class="underline hover:text-white" href="{% url 'core:privacy' %}">Privacy</a></p>
+      </div>
+    </div>
+  </footer>
 
-  <div id="js-toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] toast bg-navy-900 text-white text-sm font-medium rounded-lg px-4 py-3" role="status" aria-live="polite">
-    <span data-toast-text></span>
-  </div>
-  {% block extra_body %}{% endblock %}
+  {% include "partials/join_modal.html" %}
 </body>
 </html>

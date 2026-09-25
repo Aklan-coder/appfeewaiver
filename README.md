@@ -1,26 +1,26 @@
 # App Fee Waiver
 
-**Scholarships • Applications • Opportunities**
+A simple, mobile-first website with two jobs:
 
-A community platform where students discover scholarships, application fee waivers and funded programs, ask questions, share opportunities, save listings, and request CV/SOP reviews and appointments by email.
+1. **Join the WhatsApp community.** Students register (name, email, country, level, field of study).
+   The registration is saved and a welcome email automatically sends them the WhatsApp invite link.
+   The link is never shown on the website.
+2. **Funding Testimonies.** Members submit their success story through a Google Form. You approve
+   it in the Google Sheet (type YES) and it appears on the website automatically.
 
-Built with **Python 3 + Django 5.1 + PostgreSQL (SQLite locally) + Tailwind CSS + Alpine.js**. Designed to run on free tiers; the only thing you pay for is your domain.
+Built with Django 5.1 + PostgreSQL + Tailwind CSS. It runs on free services: Render, Neon, Brevo
+and Google Sheets.
 
-- Architecture, database schema, roles and page map: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- Free deployment guide and checklist: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
-- The homepage mockup this design follows: [`docs/reference/homepage-mockup.png`](docs/reference/homepage-mockup.png)
+- Deploying: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- Welcome emails (Brevo): [docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md)
+- Testimonies from Google Form/Sheet: [docs/GOOGLE_SHEET_SETUP.md](docs/GOOGLE_SHEET_SETUP.md)
+- How it's designed, and why: [docs/PLAN.md](docs/PLAN.md)
 
 ---
 
-## 1. Run it on your computer (VS Code)
+## 1. Run it on your computer (VS Code, Windows)
 
-You need **Python 3.11 or newer** ([python.org/downloads](https://www.python.org/downloads/)). On Windows, tick **"Add Python to PATH"** during installation. Node.js is **not** needed.
-
-1. Unzip the folder and open it in VS Code: **File → Open Folder… → `appfeewaiver`**.
-2. Open the terminal: **Terminal → New Terminal**.
-3. Run these commands **one at a time, in this order**.
-
-**Windows (PowerShell)**
+In the VS Code terminal, inside the project folder:
 
 ```powershell
 python -m venv .venv
@@ -29,138 +29,112 @@ pip install -r requirements.txt
 copy .env.example .env
 python manage.py migrate
 python manage.py createsuperuser
-python manage.py load_demo_data
+python manage.py load_demo_data      # optional: sample groups + clearly-marked demo testimonies
 python manage.py runserver
 ```
 
-> If PowerShell says "running scripts is disabled", run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, answer `Y`, and try step 2 again.
+Open http://127.0.0.1:8000 (the site) and http://127.0.0.1:8000/admin/ (the dashboard).
 
-**macOS / Linux**
+(macOS/Linux: `source .venv/bin/activate` and `cp .env.example .env`.)
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py load_demo_data
-python manage.py runserver
-```
+With `EMAIL_PROVIDER=console` in `.env`, the welcome email (with the link) is printed in the
+terminal, so you can test registrations without sending real emails.
 
-4. Open **http://127.0.0.1:8000** in your browser.
+## 2. Updating from the old (forum) version
 
-| What | Where |
-|---|---|
-| Website | http://127.0.0.1:8000 |
-| Django Admin | http://127.0.0.1:8000/admin/ (log in with the superuser you created) |
-| Dashboard (stats) | http://127.0.0.1:8000/dashboard/ |
-| Moderation queue | http://127.0.0.1:8000/moderation/ |
-| Demo member login | `amina.demo@example.com` / `demo-password-123` |
+1. **Back up first:** copy your project folder somewhere safe.
+2. In your project folder, **delete everything except** `.venv`, `.env` and `.git`
+   (the old `community`, `opportunities`, `resources`, `support`, `notifications` and `moderation`
+   folders must be removed, not just overwritten).
+3. Copy the contents of this new version into the folder.
+4. Run:
+   ```powershell
+   .venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   python manage.py migrate
+   python manage.py test
+   git add -A
+   git commit -m "Rebuild as single-page registration + testimonies site"
+   git push
+   ```
+5. Follow "Updating the existing live site" in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+   (new Render environment variables, then add your WhatsApp groups in Admin).
 
-`createsuperuser` asks for an **email**, a **full name** and a **password**. That account is the Administrator.
+**No old data is deleted by the update.** The old forum tables stay in the database, unused.
+`python manage.py drop_legacy_tables` lists them, and `--confirm` removes them when you're ready.
 
-**Next time** you only need to activate the environment and start the server:
+## 3. The admin dashboard (`/admin/`)
 
-```powershell
-.venv\Scripts\Activate.ps1      # Windows   (macOS/Linux: source .venv/bin/activate)
-python manage.py runserver
-```
+- **Dashboard:** total registrations, last 7 days, published/unpublished testimonies, email failures, group counts.
+- **Registrations:** search by name or email; filter by country, level, group, date and link-sent status.
+  Actions: **Resend WhatsApp email**, **Export to CSV**, **Move selected to <group> and email them the new link**.
+  You can also change a person's group directly in the list (that alone sends no email).
+- **WhatsApp groups:** change an invite link (the next emails use it immediately), switch a group
+  on/off, set a capacity, and see how many people each group has. Add a 3rd or 4th group anytime: no code changes needed.
+- **Testimonies:** publish/unpublish, feature (shown first), edit, and "Sync from Google Sheet now".
+- **Sync logs:** every sync, with results or errors.
+- **Blog posts:** Admin → Blog posts → Add. Write a title, pick a category (Scholarships, Fee Waivers,
+  Fellowships, Internships…), and write the post as plain text with a blank line between paragraphs.
+  Deadline, official link and cover image are optional. The 3 newest posts appear in the "Latest
+  Opportunities" card on the home page. Untick *Published* to keep a draft (admins can still preview it).
+- **Resources (CV & SOP formats):** put the file in Google Drive or Google Docs, click *Share → Anyone
+  with the link → Viewer*, copy the link, then Admin → Resources → Add and paste it. Files aren't uploaded
+  to the website because Render's free plan deletes uploaded files on every deploy.
+- **Site settings:** member count shown on the site, contact email, registration on/off, announcement bar,
+  testimony form + sync URLs, the "Is the community free?" answer, and social links.
 
-VS Code also has a ready-made **Run and Debug → "Run App Fee Waiver (Django)"** launcher (select the `.venv` interpreter when VS Code asks).
-
-### Emails while developing
-Verification and password-reset emails are **printed in the terminal** where `runserver` runs. Copy the link from there.
-
----
-
-## 2. First things to set in Django Admin
-
-Open **Admin → Site configuration → Site settings**:
-
-- **Primary email**: set the App Fee Waiver address. Every "Submit CV", "Submit SOP", "Request Appointment" and contact button uses these addresses, so changing them here updates the whole site. Leave the specific addresses blank to use the primary one everywhere.
-- **Member count display**: shown on the site (default **2,000+**).
-- **Community group name / URL** (optional): adds a "Join Our Group" card (for example your WhatsApp or Telegram group).
-- **Announcement banner** (optional): a one-line message at the top of every page.
-
-## 3. Roles
-
-| Role | How to assign | Can do |
-|---|---|---|
-| Member | Anyone who signs up | Post, comment, like, save, submit opportunities, edit/delete own content, report |
-| Moderator | Admin → Users → select → action **"Make selected members Moderators"**, or `python manage.py create_moderator email@example.com` | Everything a member can, plus: moderation queue, verify/reject opportunities, remove/restore posts and comments, warn/suspend authors, dashboard, limited Django Admin |
-| Administrator | `python manage.py createsuperuser` | Everything |
+Only accounts you create with `createsuperuser` (or add in Admin → Users) can log in. There is no public sign-up.
 
 ## 4. Demo data
 
-`python manage.py load_demo_data` adds clearly-labelled demo members ("(Demo)" in their names), posts, fictional opportunities (example.edu links) and starter guides.
-
-Remove **all** of it before launch:
-
-```bash
-python manage.py remove_demo_data
-```
-
-> The demo guides are authored by the demo team account, so they are removed too. To keep one, change its **Author** in Admin → Resources first.
+`python manage.py load_demo_data` adds 2 groups with fake `DEMO` links and 5 testimonies whose names end
+in "(Demo)" with the text "Demo testimony:". They are labelled DEMO on the site and excluded from dashboard stats.
+Remove them with `python manage.py remove_demo_data`. The command refuses to run when `DEBUG=False`.
 
 ## 5. Tests
 
-```bash
+```powershell
 python manage.py test
 ```
-
-29 automated tests cover sign-up/login, email verification, posting, comments and notifications, likes/saves, search, filters, opportunity verification, moderation, Site Settings emails and page rendering.
+The tests cover:
+- registration, validation, duplicates and cooldown;
+- that the link is emailed and never appears in pages;
+- balanced group assignment, and skipping inactive or full groups;
+- email failures and resends;
+- the Google Sheet import (approval, consent, no duplicates, admin edits kept, nothing deleted);
+- the sync endpoint's token check, the dashboard numbers and the admin actions.
 
 ## 6. Changing the design (Tailwind CSS)
 
-The project ships a ready-built `static/css/tailwind.css`, so the site looks right without Node.js. If you add **new** Tailwind classes to templates, do one of these:
+The compiled CSS is in `static/css/tailwind.css`. Component styles are in `static/css/components.css`.
+If you add new Tailwind classes to templates, rebuild the CSS with the standalone Tailwind CLI or Node:
 
-- **Quick (no install):** set `TAILWIND_USE_CDN=True` in `.env` while you work. The page loads Tailwind from its CDN and picks up any class.
-- **Rebuild the file (before deploying):** install [Node.js](https://nodejs.org/), then
-  ```bash
-  npm install
-  npm run build:css
-  ```
-  Commit the updated `static/css/tailwind.css`.
-
-Shared component styles (buttons, cards, badges, forms) live in `static/css/components.css`. Brand colours are in `tailwind.config.js` (`navy` and `brand`).
+```bash
+npm install
+npm run build:css
+```
+Quick alternative while experimenting: set `TAILWIND_USE_CDN=True` in `.env` (development only).
 
 ## 7. Project structure
 
 ```
-appfeewaiver/          Django settings, root URLs, WSGI
-core/                  Home, About, Contact, policies, global search, dashboard, Site Settings, demo-data commands
-accounts/              Custom email-login User, Profile, sign-up/login/password, profile pages, saved items
-community/             Posts, categories, comments + replies, likes, saved posts, success stories
-opportunities/         Opportunities, types, filters, submissions, verification, saved opportunities
-resources/             Resource library and categories
-support/               Expert Support, CV & SOP Review, appointment requests (mailto: only)
-notifications/         On-site notifications and admin announcements
-moderation/            Reports, moderation queue, warnings/suspensions
-templates/             All HTML templates (base layout, partials, pages)
-static/                CSS, JS, logo and images
-docs/                  Architecture, deployment guide, design reference
+appfeewaiver/      settings and URLs
+core/              home page, privacy page, site settings, branded admin dashboard, commands
+registrations/     registration form, WhatsApp groups, welcome email, admin actions
+testimonies/       testimonies page, Google Sheet sync, admin
+content/           blog posts and resources (CV/SOP formats)
+accounts/          admin user accounts (email login). Old profile table kept for existing data
+templates/         HTML (base, home, testimonies, emails, admin)
+static/            CSS, JS (small, no framework), fonts, images
+docs/              deployment, email, Google Sheet guides + Apps Script
+design/reference/  the approved mockup and original images
 ```
 
-## 8. Put it on GitHub
+## 8. Useful commands
 
-1. Create an empty repository on github.com (no README), e.g. `appfeewaiver`.
-2. In the VS Code terminal:
-   ```bash
-   git init
-   git add .
-   git commit -m "App Fee Waiver version 1"
-   git branch -M main
-   git remote add origin https://github.com/YOUR-USERNAME/appfeewaiver.git
-   git push -u origin main
-   ```
-3. Check on GitHub that **`.env` and `db.sqlite3` are NOT listed**. `.gitignore` excludes them, along with any PDF files, so CVs and SOPs can't be committed by accident.
-
-Then follow [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) to go live.
-
-## 9. Important Version 1 decisions
-
-- **CVs and SOPs are never uploaded or stored.** Members email them using pre-filled `mailto:` links.
-- **Appointments are requested by email.** No Calendly or paid scheduling.
-- **No paid services.** Everything runs on free/open-source software and free tiers.
-- **No invented statistics.** The homepage shows the configured member count (2,000+) and only numbers calculated from the database.
+| Command | What it does |
+|---|---|
+| `python manage.py sync_testimonies` | Import approved testimonies from the Google Sheet now |
+| `python manage.py load_demo_data` / `remove_demo_data` | Add or remove sample data (local only) |
+| `python manage.py drop_legacy_tables [--confirm]` | List (or delete) the old forum tables |
+| `python manage.py createsuperuser` | Create an admin login |

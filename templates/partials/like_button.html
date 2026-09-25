@@ -1,9 +1,0 @@
-{% load afw %}
-{% with liked=post.pk|in_set:liked_ids %}
-<form method="post" action="{% url 'community:toggle_reaction' post.slug %}" data-toggle="like" data-login-url="{% url 'accounts:login' %}?next={{ post.get_absolute_url|urlencode }}">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-quiet btn-sm toggle-btn like" aria-pressed="{% if liked %}true{% else %}false{% endif %}" aria-label="Like this post">
-    {% icon "heart" "h-4 w-4" %} <span data-count>{{ post.num_reactions }}</span>
-  </button>
-</form>
-{% endwith %}

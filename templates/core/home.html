@@ -1,392 +1,130 @@
 {% extends "base.html" %}
-{% load static afw humanize %}
-{% block title %}App Fee Waiver – Your Global Community for Scholarship Applications{% endblock %}
+{% load static afw %}
 
 {% block content %}
-<div class="max-w-site mx-auto px-4 lg:px-6 pt-5 lg:pt-6">
-  <div class="grid gap-6 grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_290px_265px] items-start">
-
-    {# ───────────── Main column ───────────── #}
-    <div class="space-y-6 min-w-0">
-
-      {# Hero #}
-      <section class="hero rounded-2xl" aria-labelledby="hero-heading">
-        <div class="hero-pattern"></div>
-        <div class="relative grid grid-cols-[minmax(0,1fr)] gap-8 p-6 sm:p-8 lg:p-10 md:grid-cols-[minmax(0,1fr)_16rem] 2xl:grid-cols-[minmax(0,1fr)_18rem]">
-          <div>
-            <p class="font-display font-extrabold text-4xl sm:text-5xl tracking-tight">App Fee <span class="text-brand-400">Waiver</span></p>
-            <h1 id="hero-heading" class="mt-3 font-display font-bold text-2xl sm:text-[1.7rem] leading-tight">Your Global Community for Scholarship Applications</h1>
-            <p class="mt-4 text-base sm:text-lg text-slate-200 max-w-xl leading-relaxed">
-              Discover scholarships, application fee waivers and funding opportunities, get university application guidance, and learn from students around the world who are on the same journey.
-            </p>
-            <div class="mt-6 flex flex-col sm:flex-row gap-3">
-              {% if user.is_authenticated %}
-                <a href="{% url 'community:feed' %}" class="btn btn-bright">Go to the Community {% icon "arrow-right" "h-4 w-4" %}</a>
-              {% else %}
-                <a href="{% url 'accounts:signup' %}" class="btn btn-bright">Join the Community {% icon "arrow-right" "h-4 w-4" %}</a>
-              {% endif %}
-              <a href="{% url 'community:post_create' %}" class="btn btn-ghost-light">Post a Question</a>
-            </div>
-
-            <dl class="mt-8 flex flex-wrap gap-x-8 gap-y-4">
-              <div class="flex items-center gap-3">
-                {% icon "users" "h-7 w-7 text-brand-400" %}
-                <div><dt class="sr-only">Community members</dt><dd><span class="block font-display font-bold text-xl leading-none">{{ site.member_count_display }}</span><span class="block text-xs text-slate-300 mt-1" aria-hidden="true">Members</span></dd></div>
-              </div>
-              {% if stats.posts %}
-              <div class="flex items-center gap-3">
-                {% icon "chat" "h-7 w-7 text-brand-400" %}
-                <div><dt class="sr-only">Community posts</dt><dd><span class="block font-display font-bold text-xl leading-none">{{ stats.posts|intcomma }}</span><span class="block text-xs text-slate-300 mt-1" aria-hidden="true">Community posts</span></dd></div>
-              </div>
-              {% endif %}
-              {% if stats.scholarships %}
-              <div class="flex items-center gap-3">
-                {% icon "award" "h-7 w-7 text-brand-400" %}
-                <div><dt class="sr-only">Scholarships shared</dt><dd><span class="block font-display font-bold text-xl leading-none">{{ stats.scholarships|intcomma }}</span><span class="block text-xs text-slate-300 mt-1" aria-hidden="true">Scholarships shared</span></dd></div>
-              </div>
-              {% endif %}
-              {% if stats.fee_waivers %}
-              <div class="flex items-center gap-3">
-                {% icon "ticket" "h-7 w-7 text-brand-400" %}
-                <div><dt class="sr-only">Fee waivers shared</dt><dd><span class="block font-display font-bold text-xl leading-none">{{ stats.fee_waivers|intcomma }}</span><span class="block text-xs text-slate-300 mt-1" aria-hidden="true">Fee waivers shared</span></dd></div>
-              </div>
-              {% endif %}
-              {% if stats.countries %}
-              <div class="flex items-center gap-3">
-                {% icon "globe" "h-7 w-7 text-brand-400" %}
-                <div><dt class="sr-only">Countries represented</dt><dd><span class="block font-display font-bold text-xl leading-none">{{ stats.countries }}</span><span class="block text-xs text-slate-300 mt-1" aria-hidden="true">Countries represented</span></dd></div>
-              </div>
-              {% endif %}
-            </dl>
-          </div>
-
-          {# Application checklist (remembered in this browser) #}
-          <div class="glass p-5 self-start" x-data="afwChecklist([{% for key, label, url in checklist %}'{{ key }}'{% if not forloop.last %},{% endif %}{% endfor %}])">
-            <div class="flex items-center justify-between">
-              <h2 class="font-display font-bold text-base">Your Application Checklist</h2>
-            </div>
-            <p class="text-xs text-slate-300 mt-1"><span x-text="count">0</span> of {{ checklist|length }} done · saved on this device</p>
-            <ul class="mt-4 space-y-2.5">
-              {% for key, label, url in checklist %}
-              <li class="flex items-center gap-3">
-                <button type="button" @click="toggle('{{ key }}')" :aria-pressed="done['{{ key }}'] ? 'true' : 'false'" aria-pressed="false"
-                        class="h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-colors"
-                        :class="done['{{ key }}'] ? 'bg-brand-500 border-brand-500 text-navy-900' : 'border-white/50 text-transparent'"
-                        aria-label="Mark “{{ label }}” as done">
-                  {% icon "check" "h-3.5 w-3.5" %}
-                </button>
-                <a href="{% url url %}" class="text-sm hover:underline underline-offset-2" :class="done['{{ key }}'] && 'line-through text-slate-400'">{{ label }}</a>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {# Quick actions #}
-      <section aria-labelledby="quick-actions-heading">
-        <h2 id="quick-actions-heading" class="sr-only">Quick actions</h2>
-        <ul class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {% url 'opportunities:by_type' 'scholarships' as u_sch %}
-          {% url 'opportunities:by_type' 'application-fee-waivers' as u_fw %}
-          {% url 'community:post_create' as u_ask %}
-          {% url 'opportunities:submit' as u_submit %}
-          {% url 'support:cv_sop_review' as u_cv %}
-          {% url 'support:appointment' as u_appt %}
-          {% url 'resources:list' as u_res %}
-          {% url 'community:success_stories' as u_ss %}
-          <li><a href="{{ u_sch }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">{% icon "graduation" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Find Scholarships</span></a></li>
-          <li><a href="{{ u_fw }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">{% icon "ticket" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Application Fee Waivers</span></a></li>
-          <li><a href="{{ u_ask }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center">{% icon "question" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Ask a Question</span></a></li>
-          <li><a href="{{ u_submit }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">{% icon "plus-square" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Submit an Opportunity</span></a></li>
-          <li><a href="{{ u_cv }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center">{% icon "file-text" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">CV &amp; SOP Review</span></a></li>
-          <li><a href="{{ u_appt }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">{% icon "calendar" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Request Appointment</span></a></li>
-          <li><a href="{{ u_res }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">{% icon "book" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Resources</span></a></li>
-          <li><a href="{{ u_ss }}" class="card card-hover flex flex-col items-center justify-center gap-2 text-center p-4 h-full min-h-[6.5rem]"><span class="h-11 w-11 rounded-xl bg-pink-50 text-pink-700 flex items-center justify-center">{% icon "trophy" "h-6 w-6" %}</span><span class="text-sm font-semibold leading-tight">Success Stories</span></a></li>
-        </ul>
-      </section>
-
-      {# Latest from the community #}
-      <section class="card" aria-labelledby="latest-posts-heading">
-        <div class="px-4 sm:px-5 pt-5 flex flex-wrap items-center gap-3 justify-between">
-          <h2 id="latest-posts-heading" class="font-display font-bold text-xl sm:text-2xl">Latest from the Community</h2>
-          <div class="flex items-center gap-2">
-            <a href="{% url 'community:post_create' %}" class="btn btn-primary btn-sm">+ Create a Post</a>
-            <form action="{% url 'community:feed' %}" method="get" x-data>
-              <label for="home-sort" class="sr-only">Sort posts</label>
-              <select id="home-sort" name="sort" class="form-select !min-h-0 h-9 py-1 text-sm w-auto" @change="$el.form.submit()">
-                <option value="latest">Latest</option>
-                <option value="popular">Popular</option>
-                <option value="discussed">Most Discussed</option>
-                <option value="unanswered">Unanswered</option>
-              </select>
-              <noscript><button class="btn btn-outline btn-sm">Go</button></noscript>
-            </form>
-          </div>
-        </div>
-        <nav class="px-4 sm:px-5 mt-3 border-b border-slate-200 scroll-x" aria-label="Post categories">
-          <div class="flex">
-            {% for slug, label in post_tabs %}
-              <a class="tab" href="{% url 'community:feed' %}{% if slug %}?category={{ slug }}{% endif %}" {% if not slug %}aria-current="true"{% endif %}>{{ label }}</a>
-            {% endfor %}
-          </div>
-        </nav>
-        <div class="divide-y divide-slate-100">
-          {% for post in latest_posts %}
-            {% include "partials/post_card.html" %}
-          {% empty %}
-            <div class="px-5 py-10 text-center">
-              <p class="font-semibold">No posts yet.</p>
-              <p class="text-sm text-slate-600 mt-1">Be the first to ask a question or share an opportunity.</p>
-              <a href="{% url 'community:post_create' %}" class="btn btn-primary mt-4">Create a Post</a>
-            </div>
-          {% endfor %}
-        </div>
-        {% if latest_posts %}
-        <div class="px-5 py-4 border-t border-slate-100 text-center">
-          <a href="{% url 'community:feed' %}" class="btn btn-outline">View All Community Posts</a>
-        </div>
-        {% endif %}
-      </section>
-    </div>
-
-    {# ───────────── Sidebars (two columns on very wide screens) ───────────── #}
-    <div class="space-y-6 xl:contents">
-      <aside class="space-y-6 min-w-0" aria-label="Get started and support">
-        {% if not user.is_authenticated %}
-        <section class="card card-pad bg-gradient-to-b from-brand-50 to-white border-brand-100">
-          <h2 class="font-display font-bold text-base">New to App Fee Waiver?</h2>
-          <p class="mt-2 text-sm text-slate-600">Join {{ site.member_count_display }} members who share opportunities, review each other's applications and support one another.</p>
-          <a href="{% url 'accounts:signup' %}" class="btn btn-primary w-full mt-4">Create Your Account</a>
-          <p class="mt-2 text-xs text-center text-slate-500">Free. Just your name, email and a password.</p>
-        </section>
-        {% else %}
-        <section class="card card-pad">
-          <div class="flex items-center gap-3">
-            {% avatar user "md" %}
-            <div class="min-w-0"><p class="text-sm text-slate-500">Welcome back,</p><p class="font-semibold truncate">{{ user.display_name }}</p></div>
-          </div>
-          <div class="mt-4 grid grid-cols-2 gap-2">
-            <a href="{% url 'accounts:saved' %}" class="btn btn-outline btn-sm">Saved</a>
-            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline btn-sm">Edit profile</a>
-          </div>
-        </section>
-        {% endif %}
-
-        <section class="card card-pad">
-          <div class="flex gap-3">
-            <span class="h-10 w-10 shrink-0 rounded-lg bg-violet-50 text-violet-700 flex items-center justify-center">{% icon "file-text" "h-5 w-5" %}</span>
-            <div>
-              <h2 class="font-display font-bold text-base leading-tight">Get Your CV or SOP Reviewed</h2>
-              <p class="mt-1 text-sm text-slate-600">Email your document (PDF) to our team for feedback. Documents are never uploaded to this website.</p>
-            </div>
-          </div>
-          <a href="{% url 'support:cv_sop_review' %}" class="btn btn-primary w-full mt-4">CV &amp; SOP Review</a>
-        </section>
-
-        <section class="card card-pad">
-          <div class="flex gap-3">
-            <span class="h-10 w-10 shrink-0 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">{% icon "calendar" "h-5 w-5" %}</span>
-            <div>
-              <h2 class="font-display font-bold text-base leading-tight">Book an Appointment</h2>
-              <p class="mt-1 text-sm text-slate-600">Want one-on-one guidance? Send an appointment request by email.</p>
-            </div>
-          </div>
-          <a href="{% url 'support:appointment' %}" class="btn btn-navy w-full mt-4 !whitespace-normal">{% icon "mail" "h-4 w-4" %} Send Appointment Request</a>
-          <p class="mt-2 text-xs text-center text-slate-500">Email: <a class="font-semibold text-navy-900 break-all" href="mailto:{{ site.appointment }}">{{ site.appointment }}</a></p>
-        </section>
-
-        <section class="card card-pad">
-          <div class="flex items-center justify-between gap-2">
-            <h2 class="font-display font-bold text-base flex items-center gap-2">{% icon "book" "h-5 w-5 text-brand-700" %} Quick Resources</h2>
-            <a href="{% url 'resources:list' %}" class="text-sm font-semibold text-brand-700 hover:underline whitespace-nowrap shrink-0">View all</a>
-          </div>
-          <ul class="mt-3 divide-y divide-slate-100">
-            {% for r in featured_resources %}
-              <li><a href="{{ r.get_absolute_url }}" class="flex items-center justify-between gap-2 py-2.5 text-sm hover:text-brand-700"><span class="line-clamp-2">{{ r.title }}</span>{% icon "chevron-right" "h-4 w-4 shrink-0 text-slate-400" %}</a></li>
-            {% empty %}
-              {% for r in latest_resources|slice:":5" %}
-                <li><a href="{{ r.get_absolute_url }}" class="flex items-center justify-between gap-2 py-2.5 text-sm hover:text-brand-700"><span class="line-clamp-2">{{ r.title }}</span>{% icon "chevron-right" "h-4 w-4 shrink-0 text-slate-400" %}</a></li>
-              {% empty %}
-                <li class="py-2.5 text-sm text-slate-500">Guides will appear here once they are published.</li>
-              {% endfor %}
-            {% endfor %}
-          </ul>
-        </section>
-
-        <section class="card card-pad">
-          <h2 class="font-display font-bold text-base flex items-center gap-2">{% icon "dashboard" "h-5 w-5 text-brand-700" %} Community Stats</h2>
-          <dl class="mt-3 grid grid-cols-2 gap-3 text-center">
-            <div class="rounded-lg bg-slate-50 p-3 flex flex-col-reverse"><dt class="text-xs text-slate-500">Members</dt><dd class="font-display font-bold text-xl">{{ site.member_count_display }}</dd></div>
-            <div class="rounded-lg bg-slate-50 p-3 flex flex-col-reverse"><dt class="text-xs text-slate-500">Posts</dt><dd class="font-display font-bold text-xl">{{ stats.posts|intcomma }}</dd></div>
-            <div class="rounded-lg bg-slate-50 p-3 flex flex-col-reverse"><dt class="text-xs text-slate-500">Opportunities</dt><dd class="font-display font-bold text-xl">{{ stats.opportunities|intcomma }}</dd></div>
-            <div class="rounded-lg bg-slate-50 p-3 flex flex-col-reverse"><dt class="text-xs text-slate-500">Countries</dt><dd class="font-display font-bold text-xl">{{ stats.countries }}</dd></div>
-          </dl>
-          <a href="{% url 'core:guidelines' %}" class="btn btn-outline w-full mt-4">{% icon "shield-check" "h-4 w-4" %} View Community Guidelines</a>
-        </section>
-      </aside>
-
-      <aside class="space-y-6 min-w-0" aria-label="Deadlines and contributors">
-        <section class="card card-pad">
-          <div class="flex items-center justify-between gap-2">
-            <h2 class="font-display font-bold text-base flex items-center gap-2">{% icon "clock" "h-5 w-5 text-rose-600" %} Upcoming Deadlines</h2>
-            <a href="{% url 'opportunities:list' %}?sort=deadline" class="text-sm font-semibold text-brand-700 hover:underline whitespace-nowrap shrink-0">View all</a>
-          </div>
-          <ul class="mt-3 space-y-1">
-            {% for opportunity in upcoming_deadlines %}
-              {% include "partials/opportunity_row.html" %}
-            {% empty %}
-              <li class="text-sm text-slate-500 py-2">No upcoming deadlines listed yet. <a href="{% url 'opportunities:submit' %}" class="text-brand-700 font-semibold hover:underline">Share one</a>.</li>
-            {% endfor %}
-          </ul>
-        </section>
-
-        <section class="card card-pad">
-          <h2 class="font-display font-bold text-base flex items-center gap-2">{% icon "trophy" "h-5 w-5 text-amber-500" %} Top Contributors</h2>
-          <ol class="mt-3 space-y-3">
-            {% for member in top_contributors %}
-              <li>
-                <a href="{{ member.get_absolute_url }}" class="flex items-center gap-3 group">
-                  {% avatar member "sm" %}
-                  <span class="min-w-0 flex-1"><span class="block text-sm font-semibold truncate group-hover:text-brand-700">{{ member.display_name }}</span>
-                  {% if member.profile.show_country and member.profile.country %}<span class="block text-xs text-slate-500 truncate">{{ member.profile.country }}</span>{% endif %}</span>
-                  <span class="text-xs text-slate-500 shrink-0">{{ member.post_total }} post{{ member.post_total|pluralize }}</span>
-                </a>
-              </li>
-            {% empty %}
-              <li class="text-sm text-slate-500">Contributors will appear here as members start posting.</li>
-            {% endfor %}
-          </ol>
-        </section>
-
-        {% if site.community_group_url %}
-        <section class="card card-pad">
-          <h2 class="font-display font-bold text-base flex items-center gap-2">{% icon "users" "h-5 w-5 text-brand-700" %} Join Our Group</h2>
-          <p class="mt-2 text-sm text-slate-600">{{ site.community_group_name|default:"Connect with the wider App Fee Waiver community." }}</p>
-          <a href="{{ site.community_group_url }}" target="_blank" rel="noopener" class="btn btn-primary w-full mt-4">Join</a>
-        </section>
-        {% endif %}
-      </aside>
+{# ─────────────── HERO ─────────────── #}
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero-photo" role="img" aria-label="A student smiling on a university campus"></div>
+  <div class="hero-dots" aria-hidden="true"></div>
+  <div class="max-w-site mx-auto px-4 sm:px-6 hero-content pb-10 sm:pb-12 lg:pb-14">
+    <div class="max-w-[40rem]">
+      <p class="text-xs sm:text-[0.8rem] font-semibold tracking-[0.28em] text-slate-200">GLOBAL STUDENT COMMUNITY</p>
+      <h1 id="hero-heading" class="mt-4 font-display font-extrabold text-[2.1rem] leading-[1.12] sm:text-5xl lg:text-[2.9rem] lg:leading-[1.1] tracking-tight">
+        Join {{ site.displayed_member_count }} students on our <span class="hero-highlight block">WhatsApp Community</span>
+      </h1>
+      <p class="mt-5 text-base sm:text-lg lg:text-[1.15rem] leading-relaxed text-slate-200 max-w-[36rem]">
+        Get application fee waivers, scholarships, admissions updates and opportunities, <span class="hero-highlight">shared by a global community of students</span> just like you.
+      </p>
+      <ul class="mt-8 grid grid-cols-3 gap-3 sm:flex sm:gap-0 sm:divide-x sm:divide-white/15">
+        <li class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:pr-6">
+          <span class="text-brand-400">{% icon "users" "h-8 w-8 sm:h-9 sm:w-9" %}</span>
+          <span><span class="block font-bold text-lg sm:text-xl leading-tight">{{ site.displayed_member_count }}</span><span class="block text-xs sm:text-sm text-slate-300">Students Joined</span></span>
+        </li>
+        <li class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:px-6">
+          <span class="text-brand-400">{% icon "globe" "h-8 w-8 sm:h-9 sm:w-9" %}</span>
+          <span><span class="block font-bold text-lg sm:text-xl leading-tight">Global</span><span class="block text-xs sm:text-sm text-slate-300">Opportunities</span></span>
+        </li>
+        <li class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:pl-6">
+          <span class="text-brand-400">{% icon "graduation" "h-8 w-8 sm:h-9 sm:w-9" %}</span>
+          <span><span class="block font-bold text-lg sm:text-xl leading-tight">Scholarships</span><span class="block text-xs sm:text-sm text-slate-300">Fee Waivers • Admissions</span></span>
+        </li>
+      </ul>
+      <div class="mt-9 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+        <a href="#join" class="btn btn-green text-base sm:text-lg min-h-[3.25rem] px-7" data-join-open>{% icon "whatsapp" "h-6 w-6" %} Join the Community</a>
+        <p class="text-sm text-slate-300">Fill a short form and we'll email you the group link.</p>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-{# ───────────── What you can do here ───────────── #}
-<section class="max-w-site mx-auto px-4 lg:px-6 mt-14" aria-labelledby="features-heading">
-  <div class="max-w-2xl">
-    <h2 id="features-heading" class="font-display font-bold text-2xl sm:text-3xl">What You Can Do Here</h2>
-    <p class="mt-2 text-slate-600">Everything you need for your applications, in one community.</p>
-  </div>
-  <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    <li class="card card-pad"><span class="text-sky-700">{% icon "graduation" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">Find Scholarships</h3><p class="mt-1 text-sm text-slate-600">Discover funding opportunities around the world.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'opportunities:by_type' 'scholarships' %}">Browse scholarships</a></li>
-    <li class="card card-pad"><span class="text-emerald-700">{% icon "ticket" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">Application Fee Waivers</h3><p class="mt-1 text-sm text-slate-600">Find universities and programs offering application fee waivers.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'opportunities:by_type' 'application-fee-waivers' %}">See fee waivers</a></li>
-    <li class="card card-pad"><span class="text-violet-700">{% icon "question" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">Ask the Community</h3><p class="mt-1 text-sm text-slate-600">Ask questions about admissions, scholarships, funding and applications.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'community:post_create' %}">Ask a question</a></li>
-    <li class="card card-pad"><span class="text-teal-700">{% icon "plus-square" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">Share Opportunities</h3><p class="mt-1 text-sm text-slate-600">Help other students by sharing scholarships and fee waivers you discover.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'opportunities:submit' %}">Submit an opportunity</a></li>
-    <li class="card card-pad"><span class="text-rose-700">{% icon "file-text" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">CV &amp; SOP Support</h3><p class="mt-1 text-sm text-slate-600">Send your CV or Statement of Purpose to our team for review.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'support:cv_sop_review' %}">How it works</a></li>
-    <li class="card card-pad"><span class="text-indigo-700">{% icon "calendar" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">Expert Support</h3><p class="mt-1 text-sm text-slate-600">Request an appointment for more personalised guidance.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'support:expert_support' %}">Explore support</a></li>
-    <li class="card card-pad sm:col-span-2 lg:col-span-2"><span class="text-amber-600">{% icon "trophy" "h-7 w-7" %}</span><h3 class="mt-3 font-bold">Success Stories</h3><p class="mt-1 text-sm text-slate-600">Share admissions, scholarships, assistantships and other achievements with the community, and see what worked for others.</p><a class="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline" href="{% url 'community:success_stories' %}">Read success stories</a></li>
+
+{# ─────────────── WHAT MEMBERS GET ─────────────── #}
+<section class="bg-white border-b border-slate-200/70" aria-label="What the community offers">
+  <ul class="offer-strip max-w-site mx-auto px-4 sm:px-6 py-6 sm:py-7">
+    <li class="offer-item">
+      <span class="step-icon">{% icon "form" "h-6 w-6" %}</span>
+      <h3 class="font-bold text-sm sm:text-base xl:text-lg leading-tight">Application Fee Waivers</h3>
+    </li>
+    <li class="offer-item">
+      <span class="step-icon">{% icon "graduation" "h-6 w-6" %}</span>
+      <h3 class="font-bold text-sm sm:text-base xl:text-lg leading-tight">Scholarship Updates</h3>
+    </li>
+    <li class="offer-item">
+      <span class="step-icon">{% icon "award" "h-6 w-6" %}</span>
+      <h3 class="font-bold text-sm sm:text-base xl:text-lg leading-tight">Fellowships</h3>
+    </li>
+    <li class="offer-item">
+      <span class="step-icon">{% icon "briefcase" "h-6 w-6" %}</span>
+      <h3 class="font-bold text-sm sm:text-base xl:text-lg leading-tight">Internships</h3>
+    </li>
+    <li class="offer-item">
+      <span class="step-icon">{% icon "users" "h-6 w-6" %}</span>
+      <h3 class="font-bold text-sm sm:text-base xl:text-lg leading-tight">Mentorship</h3>
+    </li>
   </ul>
 </section>
 
-{# ───────────── Latest opportunities ───────────── #}
-<section class="max-w-site mx-auto px-4 lg:px-6 mt-14" aria-labelledby="opps-heading" x-data="{ tab: 'all' }">
+{# ─────────────── TESTIMONIES ─────────────── #}
+<section class="max-w-site mx-auto px-4 sm:px-6 pt-10" aria-labelledby="testimonies-heading">
   <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
-      <h2 id="opps-heading" class="font-display font-bold text-2xl sm:text-3xl">Latest Opportunities</h2>
-      <p class="mt-2 text-slate-600">Recently shared by members and moderators.</p>
+      <h2 id="testimonies-heading" class="font-display font-bold text-2xl sm:text-[1.75rem]">Latest Funding Testimonies</h2>
+      <p class="mt-1 text-slate-600">Real stories from our community members who received admissions, scholarships, fee waivers and other opportunities.</p>
     </div>
-    <div class="flex gap-2">
-      <a href="{% url 'opportunities:submit' %}" class="btn btn-outline btn-sm">Submit an Opportunity</a>
-      <a href="{% url 'opportunities:list' %}" class="btn btn-primary btn-sm">Browse All</a>
-    </div>
+    <a href="{% url 'testimonies:list' %}" class="btn btn-soft-blue">View All Testimonies {% icon "arrow-right" "h-4 w-4" %}</a>
   </div>
-  <div class="mt-5 flex gap-2 scroll-x pb-1" role="tablist" aria-label="Opportunity types">
-    {% for key, label, items in opportunity_groups %}
-      <button type="button" role="tab" class="chip" :aria-current="tab === '{{ key }}' ? 'true' : 'false'" :aria-selected="tab === '{{ key }}'" @click="tab = '{{ key }}'">{{ label }}</button>
-    {% endfor %}
-  </div>
-  {% for key, label, items in opportunity_groups %}
-    <div class="mt-5" role="tabpanel" {% if key != 'all' %}x-cloak{% endif %} x-show="tab === '{{ key }}'">
-      {% if items %}
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {% for opportunity in items %}{% include "partials/opportunity_card.html" %}{% endfor %}
-        </div>
-      {% else %}
-        <div class="card card-pad text-center text-slate-600">
-          No open {{ label|lower }} listed yet. <a href="{% url 'opportunities:submit' %}" class="font-semibold text-brand-700 hover:underline">Share one you know about</a>.
-        </div>
-      {% endif %}
-    </div>
-  {% endfor %}
-  <div class="mt-5">{% include "partials/official_notice.html" %}</div>
-</section>
-
-{# ───────────── Success stories ───────────── #}
-<section class="max-w-site mx-auto px-4 lg:px-6 mt-14" aria-labelledby="stories-heading">
-  <div class="flex flex-wrap items-end justify-between gap-4">
-    <div>
-      <h2 id="stories-heading" class="font-display font-bold text-2xl sm:text-3xl">Success Stories</h2>
-      <p class="mt-2 text-slate-600">Admissions, scholarships, assistantships and waivers from our members.</p>
-    </div>
-    <a href="{% url 'community:post_create' %}?category=success-stories" class="btn btn-outline btn-sm">Share Your Story</a>
-  </div>
-  <div class="mt-5 grid gap-4 md:grid-cols-3">
-    {% for post in success_stories %}
-      <article class="card card-pad card-hover flex flex-col">
-        <span class="badge badge-success-story self-start">{% icon "trophy" "h-3 w-3" %} {{ post.get_achievement_type_display|default:"Success Story" }}</span>
-        <h3 class="mt-3 font-display font-bold text-lg leading-snug"><a href="{{ post.get_absolute_url }}" class="hover:text-brand-700">{{ post.title }}</a></h3>
-        <p class="mt-2 text-sm text-slate-600 line-clamp-3">{{ post.body|truncatechars:200 }}</p>
-        <div class="mt-auto pt-4 flex items-center gap-2 text-sm">
-          {% avatar post.author "xs" %}<span class="font-medium">{{ post.author.display_name }}</span><span class="text-slate-400">·</span><span class="text-slate-500">{{ post.created_at|date:"M j, Y" }}</span>
-        </div>
-      </article>
-    {% empty %}
-      <div class="card card-pad md:col-span-3 text-center text-slate-600">No success stories yet. Got good news? <a class="font-semibold text-brand-700 hover:underline" href="{% url 'community:post_create' %}?category=success-stories">Share it with the community</a>.</div>
-    {% endfor %}
-  </div>
-</section>
-
-{# ───────────── Resources ───────────── #}
-<section class="max-w-site mx-auto px-4 lg:px-6 mt-14" aria-labelledby="resources-heading">
-  <div class="flex flex-wrap items-end justify-between gap-4">
-    <div>
-      <h2 id="resources-heading" class="font-display font-bold text-2xl sm:text-3xl">Guides &amp; Resources</h2>
-      <p class="mt-2 text-slate-600">Practical guides, templates and checklists for every stage of your application.</p>
-    </div>
-    <a href="{% url 'resources:list' %}" class="btn btn-outline btn-sm">Browse the Library</a>
-  </div>
-  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {% for resource in latest_resources %}
-      {% include "partials/resource_card.html" %}
-    {% empty %}
-      <div class="card card-pad sm:col-span-2 lg:col-span-3 text-center text-slate-600">Our team is preparing guides. Check back soon.</div>
-    {% endfor %}
-  </div>
-</section>
-
-{# ───────────── Join CTA ───────────── #}
-<section class="max-w-site mx-auto px-4 lg:px-6 mt-14" aria-labelledby="cta-heading">
-  <div class="hero rounded-2xl">
-    <div class="hero-pattern"></div>
-    <div class="relative p-8 sm:p-12 flex flex-col lg:flex-row lg:items-center gap-6 justify-between">
-      <div class="max-w-2xl">
-        {% if user.is_authenticated %}
-          <h2 id="cta-heading" class="font-display font-bold text-2xl sm:text-3xl">Found an opportunity others should know about?</h2>
-          <p class="mt-2 text-slate-200">Share it with the community. Moderators check the official source and mark it Verified.</p>
-        {% else %}
-          <h2 id="cta-heading" class="font-display font-bold text-2xl sm:text-3xl">Join {{ site.member_count_display }} students applying around the world</h2>
-          <p class="mt-2 text-slate-200">Ask questions, share opportunities, save scholarships for later and celebrate each other's wins.</p>
-        {% endif %}
-      </div>
-      <div class="flex flex-col sm:flex-row gap-3 shrink-0">
-        {% if user.is_authenticated %}
-          <a href="{% url 'opportunities:submit' %}" class="btn btn-bright">Submit an Opportunity</a>
-        {% else %}
-          <a href="{% url 'accounts:signup' %}" class="btn btn-bright">Join the Community</a>
-          <a href="{% url 'accounts:login' %}" class="btn btn-ghost-light">Log In</a>
-        {% endif %}
+  {% if testimonies|length >= 3 %}
+    {# Moving row: the cards scroll continuously; hovering or touching pauses it. #}
+    <div class="marquee mt-5" data-marquee style="--marquee-duration: {% widthratio testimonies|length 1 8 %}s">
+      <div class="marquee-track">
+        {% for t in testimonies %}<div class="marquee-item">{% include "partials/testimony_card.html" with clamp=True %}</div>{% endfor %}
+        {% for t in testimonies %}<div class="marquee-item" data-marquee-clone aria-hidden="true">{% include "partials/testimony_card.html" with clamp=True %}</div>{% endfor %}
       </div>
     </div>
+  {% elif testimonies %}
+    <div class="mt-5 scroll-row">
+      {% for t in testimonies %}{% include "partials/testimony_card.html" with clamp=True %}{% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-5 card p-8 text-center">
+      <p class="font-semibold">Success stories from our members will appear here soon.</p>
+      <p class="mt-1 text-sm text-slate-600">Received funding, an admission or a fee waiver? Be the first to share your story.</p>
+    </div>
+  {% endif %}
+</section>
+
+{# ─────────────── ABOUT + LATEST OPPORTUNITIES ─────────────── #}
+{# About on the left, "Latest Opportunities" card on the right #}
+<section class="max-w-site mx-auto px-4 sm:px-6 pt-12 grid grid-cols-[minmax(0,1fr)] gap-8 {% if latest_posts %} lg:grid-cols-[minmax(0,1fr)_22rem] xl:gap-12 lg:items-center {% endif %}" aria-label="About App Fee Waiver">
+  <div id="about" class="card p-6 sm:p-8">
+    <h2 class="font-display font-bold text-2xl">About App Fee Waiver</h2>
+    <p class="mt-3 text-slate-700 leading-relaxed">App Fee Waiver is a global student community supporting students with scholarship information, application fee waivers, admissions information and funding opportunities.</p>
+    <p class="mt-3 text-slate-700 leading-relaxed">Our WhatsApp community is where members share opportunities, ask questions and help each other. This website is the front door: it helps you join the community and showcases funding success stories from our members.</p>
+    <p class="mt-3 text-sm text-slate-500">Always confirm deadlines, eligibility and funding details on the official university or scholarship website. App Fee Waiver does not guarantee admission or funding.</p>
+  </div>
+  {% if latest_posts %}{% include "partials/opportunities_card.html" %}{% endif %}
+</section>
+
+{# ─────────────── FAQ ─────────────── #}
+<section class="max-w-3xl mx-auto px-4 sm:px-6 pt-12">
+  <div id="faq" aria-labelledby="faq-heading">
+    <h2 id="faq-heading" class="flex items-center gap-2 font-display font-bold text-2xl"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-navy-900 text-white">{% icon "question" "h-5 w-5" %}</span> Frequently Asked Questions</h2>
+    <div class="mt-5 grid gap-2.5">
+      {% for question, answer in faqs %}
+        <details class="faq-item">
+          <summary>{{ question }} {% icon "chevron-down" "h-4 w-4" %}</summary>
+          <p>{{ answer }}</p>
+        </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ─────────────── CONTACT ─────────────── #}
+<section class="max-w-site mx-auto px-4 sm:px-6 py-12" aria-label="Contact us">
+  <div id="contact" class="card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <h2 class="font-display font-bold text-2xl">Contact us</h2>
+    <a href="mailto:{{ site.contact_email }}?subject=App%20Fee%20Waiver%20help" class="btn btn-outline max-w-full whitespace-normal break-all self-start sm:self-auto">{% icon "mail" "h-4 w-4 shrink-0" %} {{ site.contact_email }}</a>
   </div>
 </section>
 {% endblock %}

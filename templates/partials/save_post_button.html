@@ -1,9 +1,0 @@
-{% load afw %}
-{% with saved=post.pk|in_set:saved_ids %}
-<form method="post" action="{% url 'community:toggle_save' post.slug %}" data-toggle="save" data-login-url="{% url 'accounts:login' %}?next={{ post.get_absolute_url|urlencode }}">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-quiet btn-sm toggle-btn" aria-pressed="{% if saved %}true{% else %}false{% endif %}" data-on-label="Saved" data-off-label="Save" aria-label="Save this post">
-    {% icon "bookmark" "h-4 w-4" %} <span class="hidden sm:inline" data-label>{% if saved %}Saved{% else %}Save{% endif %}</span>
-  </button>
-</form>
-{% endwith %}

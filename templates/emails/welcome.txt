@@ -1,0 +1,16 @@
+Hello {{ registration.first_name }},
+
+Welcome to App Fee Waiver.
+
+You're now one step away from joining our community of {{ site.displayed_member_count }} students sharing scholarship opportunities, application fee waivers, admissions information and funding opportunities.
+
+Use the link below to join our WhatsApp community:
+
+Join the WhatsApp Community: {{ invite_link }}
+
+We look forward to having you in the community.
+
+App Fee Waiver
+Scholarships • Applications • Opportunities
+
+Please don't share this invite link publicly. Questions? Email {{ site.contact_email }}.

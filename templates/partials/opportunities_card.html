@@ -1,0 +1,22 @@
+{% load afw %}
+{# "Latest Opportunities" card: the 3 newest blog posts. #}
+<div class="opp-frame">
+  <div class="opp-card">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="font-display font-bold text-lg text-navy-900">Latest Opportunities</h2>
+      <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">{% icon "bookmark" "h-5 w-5" %}</span>
+    </div>
+    <ul class="mt-4 grid gap-3">
+      {% for post in latest_posts %}
+        <li>
+          <a href="{{ post.get_absolute_url }}" class="opp-row {{ post.category|post_accent }}">
+            <span class="opp-label">{{ post.get_category_display }}</span>
+            <span class="opp-title">{{ post.title }}</span>
+            <span class="opp-meta">{% icon "calendar" "h-3.5 w-3.5" %}{% if post.deadline %}Deadline {{ post.deadline|date:"M j, Y" }}{% else %}{{ post.published_at|date:"M j, Y" }}{% endif %}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'content:blog' %}" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-600">See all opportunities {% icon "arrow-right" "h-4 w-4" %}</a>
+  </div>
+</div>

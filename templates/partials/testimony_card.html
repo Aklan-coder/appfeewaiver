@@ -1,0 +1,20 @@
+{% load afw %}
+<article class="card p-5 flex flex-col h-full">
+  <div class="flex items-start gap-3">
+    {% if t.photo_url %}
+      <img src="{{ t.photo_url }}" alt="" width="52" height="52" loading="lazy" referrerpolicy="no-referrer" class="h-[52px] w-[52px] rounded-full object-cover bg-slate-100 shrink-0" data-avatar-fallback="{{ t.initials }}">
+    {% else %}
+      <span class="h-[52px] w-[52px] rounded-full bg-navy-900 text-white font-semibold flex items-center justify-center shrink-0" aria-hidden="true">{{ t.initials }}</span>
+    {% endif %}
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <h3 class="font-bold leading-tight break-words">{{ t.name }}</h3>
+        <span class="badge {{ t.success_type|badge_class }}">{{ t.get_success_type_display }}</span>
+      </div>
+      {% if t.program %}<p class="text-xs text-slate-600 mt-0.5 truncate">{{ t.program }}{% if t.university %}, {{ t.university }}{% endif %}</p>{% elif t.university %}<p class="text-xs text-slate-600 mt-0.5 truncate">{{ t.university }}</p>{% endif %}
+      {% if t.country %}<p class="text-xs text-slate-500">{{ t.country }}</p>{% endif %}
+    </div>
+  </div>
+  <blockquote class="mt-4 text-[0.92rem] leading-relaxed text-slate-800 flex-1 {% if clamp %}line-clamp-5{% endif %}">“{{ t.testimony }}”</blockquote>
+  <p class="mt-4 text-xs text-slate-500"><time datetime="{{ t.display_date|date:'c' }}">{{ t.display_date|date:"M j, Y" }}</time>{% if t.is_demo %} · <span class="font-semibold text-amber-700">DEMO</span>{% endif %}</p>
+</article>
